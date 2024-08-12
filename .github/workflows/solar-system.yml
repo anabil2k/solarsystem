@@ -117,9 +117,9 @@ jobs:
                         anabil2k/solar-system:${{ github.sha }}
                     export IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' solar-system-app)
                     echo $IP
-                    #docker inspect solar-system-app | grep -i IPAdress
+                    #docker inspect solar-system-app | grep -i IPAddress
                     echo testing image url using wget
-                    wget -q -o 127.0.0.1:3000/live | grep live
+                    wget -q -0 127.0.0.1:3000/live | grep live
             - name: docker build and push
               uses: docker/build-push-action@v5
               with:
