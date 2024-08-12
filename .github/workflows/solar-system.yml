@@ -40,40 +40,6 @@ jobs:
               run: npm install
 
             - name: unit testing
-              run: npm test
-
-            - name: Archive test result
-              uses: actions/upload-artifact@v3
-              with:
-                name: mocha-test-result
-                path: test-results.xml
-
-    unit-testing:
-        name: unit testing
-        strategy:
-            matrix:
-                nodejs_version: [18,19,20]
-                os: [ubuntu-latest,macos-latest]
-                exclude:
-                    - nodejs_version: 18
-                      os: macos-latest
-        #runs-on: ubuntu-latest
-        runs-on: ${{ matrix.os }}
-        steps:
-            - name: checkout
-              uses: actions/checkout@v4
-
-            - name: ${{ matrix.nodejs_version }}
-            #- name: setup Node Js Version 18
-              uses: actions/setup-node@v3
-              with:
-                #node-version: 18
-                node-version: ${{ matrix.nodejs_version }}
-
-            - name: install depend.
-              run: npm install
-
-            - name: unit testing
               id: steps.nodejs-unit-testing-step
               run: npm test
 
