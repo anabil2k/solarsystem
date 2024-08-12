@@ -40,7 +40,7 @@ jobs:
               run: npm install
 
             - name: unit testing
-              id: steps.nodejs-unit-testing-step
+              id: nodejs-unit-testing-step
               run: npm test
 
             - name: Archive test result
@@ -73,7 +73,6 @@ jobs:
               run: npm run coverage
 
             - name: unit testing
-              
               run: npm test
 
             - name: Archive coverage result
