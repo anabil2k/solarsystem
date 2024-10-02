@@ -227,9 +227,7 @@ resource "aws_instance" "monitoring_server" {
 
   #security_groups = [aws_security_group.monitoring_sec_group.name]
   vpc_security_group_ids = [aws_security_group.monitoring_sec_group.id]
-  tags = {
-    Name = "${var.environment_name}-MonitoringServer"
-  }
+  
 
   user_data = <<-EOF
     #!/bin/bash
@@ -252,7 +250,7 @@ resource "aws_instance" "monitoring_server" {
   
   tags = {
     Name = "PrometheusServer"
-
+  }
   depends_on = [aws_security_group.monitoring_sec_group]
 }
 
