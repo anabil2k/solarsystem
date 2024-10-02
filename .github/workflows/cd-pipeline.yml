@@ -1,0 +1,77 @@
+name: Provision EC2 and Deploy with Ansible
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  provision-ec2:
+    name: Provision EC2 Instances with Terraform
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: "us-east-1"
+
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.9
+
+      # Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform
+
+      # Apply the Terraform configuration and assign Elastic IPs to the EC2 instances
+      - name: Terraform Apply
+        id: apply
+        run: terraform apply -auto-approve
+        working-directory: ./terraform
+
+      # Save the Elastic IPs as artifacts to use them in the next job
+      - name: Save Elastic IPs
+        run: |
+          echo "WEB_ELASTIC_IP=$(terraform output -raw web_elastic_ip)" >> $GITHUB_ENV
+          echo "PROMETHEUS_ELASTIC_IP=$(terraform output -raw prometheus_elastic_ip)" >> $GITHUB_ENV
+
+  ansible-deploy:
+    name: Deploy Configuration with Ansible
+    runs-on: ubuntu-latest
+    needs: provision-ec2
+
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Generate an SSH key compatible with Ubuntu (Ansible will use this key for communication)
+      - name: Generate SSH Key
+        run: ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
+
+      # Output the public key for Ansible to distribute it to the instances
+      - name: Show Public Key
+        run: cat ~/.ssh/id_rsa.pub
+
+      # Use cached Elastic IPs from the Terraform job to update Ansible hosts inventory
+      - name: Update Ansible Inventory with Elastic IPs
+        run: |
+          echo "[webserver]" > ./ansible/inventory.ini
+          echo "web_instance ansible_host=${{ env.WEB_ELASTIC_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> ./ansible/inventory.ini
+          echo "[prometheus]" >> ./ansible/inventory.ini
+          echo "prometheus_instance ansible_host=${{ env.PROMETHEUS_ELASTIC_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> ./ansible/inventory.ini
+
+      # Run Ansible playbook to configure both EC2 instances
+      - name: Run Ansible Playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          inventory: ./ansible/inventory.ini
+          playbook: ./ansible/playbook.yml
