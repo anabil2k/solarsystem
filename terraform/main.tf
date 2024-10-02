@@ -118,8 +118,8 @@ resource "aws_instance" "fe_ec2" {
   ami           = var.ec2_ami
   instance_type = var.ec2_type
   subnet_id = aws_subnet.public_subnet_1.id
-  #security_groups = [aws_security_group.web_sec_group.name]
-  vpc_security_group_ids = [aws_security_group.web_sec_group.id]
+  security_groups = [aws_security_group.web_sec_group.name]
+  #vpc_security_group_ids = [aws_security_group.web_sec_group.id]
   
   
   user_data = <<-EOF
@@ -134,6 +134,7 @@ resource "aws_instance" "fe_ec2" {
   root_block_device {
     volume_size = 10
   }
+  depends_on = [aws_security_group.web_sec_group]
    
 }
 
@@ -171,6 +172,7 @@ resource "aws_security_group" "web_sec_group" {
   tags = {
     Name = "WebServer"
   }
+  
 }
 
 
@@ -227,7 +229,8 @@ resource "aws_instance" "monitoring_server" {
   
 
   #security_groups = [aws_security_group.monitoring_sec_group.name]
-  vpc_security_group_ids = [aws_security_group.monitoring_sec_group.id]
+  #vpc_security_group_ids = [aws_security_group.monitoring_sec_group.id]
+  security_groups = [aws_security_group.monitoring_sec_group.name]
   
 
   user_data = <<-EOF
