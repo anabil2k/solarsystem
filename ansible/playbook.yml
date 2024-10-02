@@ -1,0 +1,16 @@
+---
+- name: Copy files to WebServer
+  hosts: webserver
+  tasks:
+    - name: Transfer files to webserver
+      copy:
+        src: /path/to/your/files
+        dest: /var/www/html/
+
+- name: Copy files to PrometheusServer
+  hosts: prometheus
+  tasks:
+    - name: Transfer Prometheus config
+      copy:
+        src: /path/to/prometheus/config
+        dest: /etc/prometheus/

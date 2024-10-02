@@ -28,15 +28,19 @@ jobs:
         with:
           terraform_version: 1.1.9
 
+      # Generate a temporary SSH key to access EC2 instances initially
+      - name: Generate Temporary SSH Key
+        run: ssh-keygen -t rsa -b 4096 -f ~/.ssh/temp_id_rsa -N ""
+      
       # Initialize Terraform
       - name: Terraform Init
         run: terraform init
         working-directory: ./terraform
 
-      # Apply the Terraform configuration and assign Elastic IPs to the EC2 instances
+      # Apply Terraform configuration (including EC2 and Elastic IP creation)
       - name: Terraform Apply
         id: apply
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -var "public_key=$(cat ~/.ssh/temp_id_rsa.pub)"
         working-directory: ./terraform
 
       # Save the Elastic IPs as artifacts to use them in the next job
@@ -55,16 +59,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Generate an SSH key compatible with Ubuntu (Ansible will use this key for communication)
-      - name: Generate SSH Key
+      # Generate a permanent SSH key for future Ansible connections
+      - name: Generate Permanent SSH Key
         run: ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
 
-      # Output the public key for Ansible to distribute it to the instances
-      - name: Show Public Key
-        run: cat ~/.ssh/id_rsa.pub
+      # Distribute the generated SSH key to the EC2 instances using temporary SSH key
+      - name: Distribute SSH Key to WebServer and Prometheus
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
 
-      # Use cached Elastic IPs from the Terraform job to update Ansible hosts inventory
-      - name: Update Ansible Inventory with Elastic IPs
+      # Update Ansible inventory to use the newly generated SSH key
+      - name: Update Ansible Inventory with Elastic IPs and SSH key
         run: |
           echo "[webserver]" > ./ansible/inventory.ini
           echo "web_instance ansible_host=${{ env.WEB_ELASTIC_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> ./ansible/inventory.ini
