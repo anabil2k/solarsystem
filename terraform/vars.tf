@@ -6,17 +6,17 @@ variable "aws_region_name" {
   
 }
 
-variable "aws_access_key" {
+variable "aws_access_key_id" {
   description = "AWS Access Key"
   type        = string
-  #default = "AKIAQQABDTOEWBNA7RD"
+ 
   
 }
 
-variable "aws_secret_key" {
+variable "aws_secret_access_key" {
   description = "AWS Secret Key"
   type        = string
-  #default = "wr/z8sx8QL0iLOw4ZVygWe5jJ7gNM0YDH2A1p9H"
+
   
 }
 
@@ -72,10 +72,7 @@ variable "ec2_type" {
   
 }
 
-variable "key_name" {
-  description = "The name of the key pair to associate with the EC2 instance"
-  type        = string
-}
+
 
 variable "public_key" {
   type = string

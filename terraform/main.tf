@@ -2,8 +2,8 @@
 
 provider "aws" {
   region = var.aws_region_name
-  access_key = var.aws_access_key
-  secret_key = var.aws_secret_key
+  access_key = var.aws_access_key_id
+  secret_key = var.aws_secret_access_key
 }
 data "aws_availability_zones" "available" {}
 # VPC
@@ -142,6 +142,9 @@ resource "aws_instance" "fe_ec2" {
 resource "aws_security_group" "web_sec_group" {
   description = "Allow http to our hosts and SSH from local only"
   vpc_id      = aws_vpc.main_vpc.id
+  key_name      = "temp_key_pair"  # Name of the temporary key
+
+  
 
   ingress {
     protocol    = "tcp"
@@ -165,7 +168,7 @@ resource "aws_security_group" "web_sec_group" {
   }
 
   tags = {
-    Name = "${var.environment_name} WebServerSecGroup"
+    Name = "WebServer"
   }
 }
 
@@ -219,7 +222,8 @@ resource "aws_security_group" "monitoring_sec_group" {
 resource "aws_instance" "monitoring_server" {
   ami           = var.ec2_ami
   instance_type = var.ec2_type
-  key_name      = var.key_name  # Ensure the key pair is already created in AWS
+  key_name      = "temp_key_pair"  # Name of the temporary key
+  
 
   #security_groups = [aws_security_group.monitoring_sec_group.name]
   vpc_security_group_ids = [aws_security_group.monitoring_sec_group.id]
@@ -245,6 +249,10 @@ resource "aws_instance" "monitoring_server" {
   root_block_device {
     volume_size = 20
   }
+  
+  tags = {
+    Name = "PrometheusServer"
+
   depends_on = [aws_security_group.monitoring_sec_group]
 }
 
@@ -252,4 +260,10 @@ resource "aws_instance" "monitoring_server" {
 resource "aws_eip" "monitoring_server_eip" {
   instance = aws_instance.monitoring_server.id
   domain = "vpc"
+}
+
+# Create a key pair resource to use during instance provisioning
+resource "aws_key_pair" "temp_key_pair" {
+  key_name   = "temp_key_pair"
+  public_key = var.public_key  # Use the public key from GitHub Actions
 }
