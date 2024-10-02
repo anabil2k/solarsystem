@@ -118,7 +118,8 @@ resource "aws_instance" "fe_ec2" {
   ami           = var.ec2_ami
   instance_type = var.ec2_type
   subnet_id = aws_subnet.public_subnet_1.id
-  security_groups = [aws_security_group.web_sec_group.name]
+  #security_groups = [aws_security_group.web_sec_group.name]
+  vpc_security_group_ids = [aws_security_group.web_sec_group.id]
   
   
   user_data = <<-EOF
