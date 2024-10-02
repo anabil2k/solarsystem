@@ -127,7 +127,7 @@ resource "aws_instance" "fe_ec2" {
     sudo apt-get install apache2 -y
     sudo systemctl start apache2.service
     cd /var/www/html
-    echo "it works! Udagram, Udacity" > index.html
+    #echo "it works! Udagram, Udacity" > index.html
   EOF
 
   root_block_device {
