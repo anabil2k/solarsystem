@@ -1,9 +1,11 @@
 name: Provision EC2 and Deploy with Ansible
 
 on:
-  push:
-    branches:
-      - main
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+            - 'feature/*'
 
 jobs:
   provision-ec2:
