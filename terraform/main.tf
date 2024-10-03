@@ -119,6 +119,7 @@ resource "aws_instance" "fe_ec2" {
   instance_type = var.ec2_type
   subnet_id = aws_subnet.public_subnet_1.id
   security_groups = [aws_security_group.web_sec_group.name]
+  key_name      = "temp_key_pair"  # Name of the temporary key
   #vpc_security_group_ids = [aws_security_group.web_sec_group.id]
   
   
@@ -144,7 +145,7 @@ resource "aws_instance" "fe_ec2" {
 resource "aws_security_group" "web_sec_group" {
   description = "Allow http to our hosts and SSH from local only"
   vpc_id      = aws_vpc.main_vpc.id
-  key_name      = "temp_key_pair"  # Name of the temporary key
+  
 
   
 
@@ -163,9 +164,9 @@ resource "aws_security_group" "web_sec_group" {
   }
 
   egress {
-    protocol    = "tcp"
+    protocol    = "-1"
     from_port   = 0
-    to_port     = 65535
+    to_port     = 0
     cidr_blocks = ["0.0.0.0/0"]
   }
 
