@@ -6,7 +6,7 @@ provider "aws" {
   secret_key = var.aws_secret_access_key
 }
 data "aws_availability_zones" "available" {}
-
+/*
 # Backend infrastructure for Terraform state management
 resource "aws_s3_bucket" "terraform_state_bucket" {
   bucket = "my-depi-anmz-terraform-state-bucket"  # Choose a globally unique name
@@ -39,6 +39,7 @@ terraform {
     encrypt        = true                           # Encrypt state file at rest
   }
 }
+*/
 # VPC
 resource "aws_vpc" "main_vpc" {
   cidr_block           = var.vpc_cidr

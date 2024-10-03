@@ -49,7 +49,7 @@ output "monitoring_server_eip" {
   description = "monitoring_server_eip"
   value       = aws_eip.monitoring_server_eip.public_ip
 }
-
+/*
 output "state_bucket_name" {
   value = aws_s3_bucket.terraform_state_bucket.bucket
 }
@@ -57,3 +57,4 @@ output "state_bucket_name" {
 output "dynamodb_table_name" {
   value = aws_dynamodb_table.terraform_locks.name
 }
+*/
