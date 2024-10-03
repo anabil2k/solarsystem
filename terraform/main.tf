@@ -6,6 +6,39 @@ provider "aws" {
   secret_key = var.aws_secret_access_key
 }
 data "aws_availability_zones" "available" {}
+
+# Backend infrastructure for Terraform state management
+resource "aws_s3_bucket" "terraform_state_bucket" {
+  bucket = "my-depi-anmz-terraform-state-bucket"  # Choose a globally unique name
+  
+}
+resource "aws_s3_bucket_acl" "acl_type" {
+  bucket = aws_s3_bucket.terraform_state_bucket.id
+  acl    = "private"
+
+}
+# DynamoDB table for state locking and consistency
+resource "aws_dynamodb_table" "terraform_locks" {
+  name         = "terraform-locks"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "LockID"
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+}
+
+# Backend configuration to store state in S3 and use DynamoDB for locking
+terraform {
+  backend "s3" {
+    bucket         = "my-depi-anmz-terraform-state-bucket"    # Replace with your S3 bucket name
+    key            = "terraform/state.tfstate"      # Path to the state file within the bucket
+    region         = var.aws_region_name                # AWS region
+    dynamodb_table = "terraform-locks"              # DynamoDB table for state locking
+    encrypt        = true                           # Encrypt state file at rest
+  }
+}
 # VPC
 resource "aws_vpc" "main_vpc" {
   cidr_block           = var.vpc_cidr
@@ -180,7 +213,7 @@ resource "aws_security_group" "web_sec_group" {
 # Security Group for Prometheus and Grafana Server
 resource "aws_security_group" "monitoring_sec_group" {
   description = "Allow HTTP, HTTPS, and SSH traffic"
-  vpc_id      = data.aws_vpc.selected.id
+  vpc_id      = aws_vpc.main_vpc.id
 
   ingress {
     protocol    = "tcp"

@@ -15,10 +15,6 @@ output "private_route_table_1_id" {
   value       = aws_route_table.private_route_table_1.id
 }
 
-output "private_route_table_2_id" {
-  description = "Private Routing AZ2"
-  value       = aws_route_table.private_route_table_2.id
-}
 
 output "public_subnets" {
   description = "A list of the public subnets"
@@ -54,3 +50,10 @@ output "monitoring_server_eip" {
   value       = aws_eip.monitoring_server_eip.public_ip
 }
 
+output "state_bucket_name" {
+  value = aws_s3_bucket.terraform_state_bucket.bucket
+}
+
+output "dynamodb_table_name" {
+  value = aws_dynamodb_table.terraform_locks.name
+}

@@ -3,20 +3,19 @@ variable "aws_region_name" {
   description = "AWS Region"
   type        = string
   default = "us-east-1"
+
   
 }
 
 variable "aws_access_key_id" {
   description = "AWS Access Key"
   type        = string
- 
   
 }
 
 variable "aws_secret_access_key" {
   description = "AWS Secret Key"
   type        = string
-
   
 }
 
