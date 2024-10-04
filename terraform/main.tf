@@ -28,7 +28,7 @@ resource "aws_dynamodb_table" "terraform_locks" {
     type = "S"
   }
 }
-
+*/
 # Backend configuration to store state in S3 and use DynamoDB for locking
 terraform {
   backend "s3" {
@@ -39,7 +39,7 @@ terraform {
     encrypt        = true                           # Encrypt state file at rest
   }
 }
-*/
+
 # VPC
 resource "aws_vpc" "main_vpc" {
   cidr_block           = var.vpc_cidr
