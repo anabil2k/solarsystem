@@ -40,7 +40,7 @@ jobs:
       # Apply Terraform configuration (including EC2 and Elastic IP creation)
       - name: Terraform Apply
         id: apply
-        run: terraform apply -auto-approve -var "public_key=$(cat ~/.ssh/temp_id_rsa.pub)"
+        run: terraform apply -auto-approve -var "public_key=$(cat ~/.ssh/temp_id_rsa.pub) -lock=false"
         working-directory: ./terraform
 
       # Save the Elastic IPs as artifacts to use them in the next job
