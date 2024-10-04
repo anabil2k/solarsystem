@@ -1,7 +1,7 @@
 # main.tf
 
 provider "aws" {
-  region = var.aws_region_name
+  region = "us-east-1"
   access_key = var.aws_access_key_id
   secret_key = var.aws_secret_access_key
 }
@@ -17,6 +17,7 @@ resource "aws_s3_bucket_acl" "acl_type" {
   acl    = "private"
 
 }
+*/
 # DynamoDB table for state locking and consistency
 resource "aws_dynamodb_table" "terraform_locks" {
   name         = "terraform-locks"
@@ -28,13 +29,13 @@ resource "aws_dynamodb_table" "terraform_locks" {
     type = "S"
   }
 }
-*/
+
 # Backend configuration to store state in S3 and use DynamoDB for locking
 terraform {
   backend "s3" {
     bucket         = "my-depi-anmz-terraform-state-bucket"    # Replace with your S3 bucket name
     key            = "terraform/state.tfstate"      # Path to the state file within the bucket
-    region         = "us-east-1"                # AWS region
+    region         = "us-east-1"                # AWS region -Variables not allowed
     dynamodb_table = "terraform-locks"              # DynamoDB table for state locking
     encrypt        = true                           # Encrypt state file at rest
   }
