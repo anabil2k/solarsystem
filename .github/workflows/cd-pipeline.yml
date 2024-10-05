@@ -22,11 +22,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Setup Terraform
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.1.9
+           terraform_wrapper: false
+#          terraform_version: 1.1.9
+
+
 
       - name: "Configure AWS Credentials" 
         uses: aws-actions/configure-aws-credentials@v4.0.2
@@ -42,16 +44,33 @@ jobs:
       
       # Initialize Terraform
       - name: Terraform Init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: terraform init
         working-directory: ./terraform
+
+      # validate Terraform
+      - name: Terraform validate
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform validate
+        working-directory: ./terraform
+
 
       # Apply Terraform configuration (including EC2 and Elastic IP creation)
       - name: Terraform Apply
         working-directory: ./terraform
         id: apply
-        run: terraform apply -auto-approve -lock=false -var "aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}" -var "aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          TF_VAR_aws-region: ${{ env.AWS_REGION }} 
+#          TF_VAR_ssh-public-key: "${{ env.SSH_PUBLIC_KEY }}"
+        run: terraform apply -auto-approve
 
-
+        #run: terraform apply -auto-approve -lock=false -var "aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}" -var "aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}"
         # -lock=false
         # -var "public_key=$(cat ~/.ssh/temp_id_rsa.pub)"
         
