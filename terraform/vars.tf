@@ -62,7 +62,7 @@ variable "private_subnet_2_cidr" {
 variable "ec2_ami" {
   description = "ec2 ami"
   type        = string
-  default = "ami-096ea6a12ea24a797"
+  default = "ami-0866a3c8686eaeeba"
   
 }
 

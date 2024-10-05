@@ -17,7 +17,7 @@ resource "aws_s3_bucket_acl" "acl_type" {
   acl    = "private"
 
 }
-*/
+
 # DynamoDB table for state locking and consistency
 resource "aws_dynamodb_table" "terraform_locks" {
   name         = "terraform-locks"
@@ -29,7 +29,7 @@ resource "aws_dynamodb_table" "terraform_locks" {
     type = "S"
   }
 }
-
+*/
 # Backend configuration to store state in S3 and use DynamoDB for locking
 terraform {
   backend "s3" {
@@ -153,9 +153,9 @@ resource "aws_instance" "fe_ec2" {
   ami           = var.ec2_ami
   instance_type = var.ec2_type
   subnet_id = aws_subnet.public_subnet_1.id
-  security_groups = [aws_security_group.web_sec_group.name]
+  #security_groups = [aws_security_group.web_sec_group.name]
   key_name      = "ec2_key_pair"  # Name of the temporary key
-  #vpc_security_group_ids = [aws_security_group.web_sec_group.id]
+  vpc_security_group_ids = [aws_security_group.web_sec_group.id]
   
   
   user_data = <<-EOF
@@ -164,7 +164,7 @@ resource "aws_instance" "fe_ec2" {
     sudo apt-get install apache2 -y
     sudo systemctl start apache2.service
     cd /var/www/html
-    #echo "it works! DEPI, MCIT" > index.html
+    #echo "it works! Depi, MCIT" > index.html
   EOF
 
   root_block_device {
@@ -261,12 +261,13 @@ resource "aws_security_group" "monitoring_sec_group" {
 resource "aws_instance" "monitoring_server" {
   ami           = var.ec2_ami
   instance_type = var.ec2_type
+  subnet_id = aws_subnet.public_subnet_1.id
   key_name      = "ec2_key_pair"  # Name of the temporary key #name of the keypair on aws
   
 
   #security_groups = [aws_security_group.monitoring_sec_group.name]
-  #vpc_security_group_ids = [aws_security_group.monitoring_sec_group.id]
-  security_groups = [aws_security_group.monitoring_sec_group.name]
+  vpc_security_group_ids = [aws_security_group.monitoring_sec_group.id]
+  #security_groups = [aws_security_group.monitoring_sec_group.name]
   
 /*
   user_data = <<-EOF
