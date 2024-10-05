@@ -1,4 +1,6 @@
 ---
 roles:
- - name: cloudalchemy.prometheus
- - name: cloudalchemy.grafana
+  #- role: prometheus.prometheus.prometheus
+  #- role: grafana.grafana.grafana
+  - name: prometheus.prometheus.prometheus
+  - name: grafana.grafana.grafana

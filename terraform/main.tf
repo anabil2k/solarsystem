@@ -154,7 +154,7 @@ resource "aws_instance" "fe_ec2" {
   instance_type = var.ec2_type
   subnet_id = aws_subnet.public_subnet_1.id
   security_groups = [aws_security_group.web_sec_group.name]
-  key_name      = "temp_key_pair"  # Name of the temporary key
+  key_name      = "ec2_key_pair"  # Name of the temporary key
   #vpc_security_group_ids = [aws_security_group.web_sec_group.id]
   
   
@@ -164,7 +164,7 @@ resource "aws_instance" "fe_ec2" {
     sudo apt-get install apache2 -y
     sudo systemctl start apache2.service
     cd /var/www/html
-    #echo "it works! Udagram, Udacity" > index.html
+    #echo "it works! DEPI, MCIT" > index.html
   EOF
 
   root_block_device {
@@ -261,14 +261,14 @@ resource "aws_security_group" "monitoring_sec_group" {
 resource "aws_instance" "monitoring_server" {
   ami           = var.ec2_ami
   instance_type = var.ec2_type
-  key_name      = "temp_key_pair"  # Name of the temporary key
+  key_name      = "ec2_key_pair"  # Name of the temporary key #name of the keypair on aws
   
 
   #security_groups = [aws_security_group.monitoring_sec_group.name]
   #vpc_security_group_ids = [aws_security_group.monitoring_sec_group.id]
   security_groups = [aws_security_group.monitoring_sec_group.name]
   
-
+/*
   user_data = <<-EOF
     #!/bin/bash
     # Update and install necessary packages
@@ -283,7 +283,7 @@ resource "aws_instance" "monitoring_server" {
     sudo systemctl start grafana-server
     sudo systemctl enable grafana-server
   EOF
-
+*/
   root_block_device {
     volume_size = 20
   }
@@ -300,8 +300,3 @@ resource "aws_eip" "monitoring_server_eip" {
   domain = "vpc"
 }
 
-# Create a key pair resource to use during instance provisioning
-resource "aws_key_pair" "temp_key_pair" {
-  key_name   = "temp_key_pair"
-  public_key = var.public_key  # Use the public key from GitHub Actions
-}

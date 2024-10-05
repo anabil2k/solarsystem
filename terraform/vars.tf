@@ -10,14 +10,14 @@ variable "aws_region_name" {
 variable "aws_access_key_id" {
   description = "AWS Access Key"
   type        = string
-  
+
   
 }
 
 variable "aws_secret_access_key" {
   description = "AWS Secret Key"
   type        = string
-  
+
   
 }
 
@@ -74,7 +74,8 @@ variable "ec2_type" {
 }
 
 
-
+/*
 variable "public_key" {
   type = string
 }
+*/

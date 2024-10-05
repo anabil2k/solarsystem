@@ -28,9 +28,17 @@ jobs:
         with:
           terraform_version: 1.1.9
 
+      - name: "Configure AWS Credentials" 
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
       # Generate a temporary SSH key to access EC2 instances initially
-      - name: Generate Temporary SSH Key
-        run: ssh-keygen -t rsa -b 4096 -f ~/.ssh/temp_id_rsa -N ""
+      #- name: Generate Temporary SSH Key
+      #  run: ssh-keygen -t rsa -b 4096 -f ~/.ssh/temp_id_rsa -N ""
+      #  run: ssh-keygen -t rsa -b 2048 -f ~/.ssh/temp_id_rsa -N ""
       
       # Initialize Terraform
       - name: Terraform Init
@@ -40,7 +48,9 @@ jobs:
       # Apply Terraform configuration (including EC2 and Elastic IP creation)
       - name: Terraform Apply
         id: apply
-        run: terraform apply -auto-approve -lock=false -var "public_key=$(cat ~/.ssh/temp_id_rsa.pub)"
+        run: terraform apply -auto-approve
+        # -lock=false
+        # -var "public_key=$(cat ~/.ssh/temp_id_rsa.pub)"
         working-directory: ./terraform
 
       # Save the Elastic IPs as artifacts to use them in the next job
@@ -50,7 +60,7 @@ jobs:
           echo "PROMETHEUS_ELASTIC_IP=$(terraform output -raw prometheus_elastic_ip)" >> $GITHUB_ENV
 
   ansible-deploy:
-    name: Deploy Configuration with Ansible
+    name: Install and Deploy Configuration using Ansible
     runs-on: ubuntu-latest
     needs: provision-ec2
 
@@ -58,6 +68,13 @@ jobs:
       # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: install ansible
+        run: sudo apt update && sudo apt install ansible -y
+
+      - name: install ansible galaxy roles
+        run: ansible-galaxy install -r ./ansible/requirements.yml
+
 
       # Generate a permanent SSH key for future Ansible connections
       - name: Generate Permanent SSH Key
@@ -77,10 +94,20 @@ jobs:
           echo "[prometheus]" >> ./ansible/inventory.ini
           echo "prometheus_instance ansible_host=${{ env.PROMETHEUS_ELASTIC_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> ./ansible/inventory.ini
 
-          
-      # Run Ansible playbook to configure both EC2 instances
+      # check servers' connectivity
+      - name: ping servers
+        run: ansible all -i inventory.ini -m ping
+
+      # Run Ansible playbook to publish website
       - name: Run Ansible Playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
           inventory: ./ansible/inventory.ini
-          playbook: ./ansible/playbook.yml
+          playbook: ./ansible/publish-web.yml
+
+      # Run Ansible playbook to install and configure monitoring 
+      - name: Run Ansible Playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          inventory: ./ansible/inventory.ini
+          playbook: ./ansible/install-config-monitoring.yml
