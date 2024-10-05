@@ -48,7 +48,7 @@ jobs:
       # Apply Terraform configuration (including EC2 and Elastic IP creation)
       - name: Terraform Apply
         id: apply
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -lock=false
         # -lock=false
         # -var "public_key=$(cat ~/.ssh/temp_id_rsa.pub)"
         working-directory: ./terraform
