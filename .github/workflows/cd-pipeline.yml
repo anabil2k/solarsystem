@@ -12,8 +12,8 @@ jobs:
     name: Provision Network and EC2 Instances using Terraform
     runs-on: ubuntu-latest
     outputs:
-      webserver_eip: ${{ steps.apply.outputs.webserver_eip }}
-      monitoring_server_eip: ${{ steps.apply.outputs.monitoring_server_eip }}
+      webserver_eip: ${{steps.apply.outputs.webserver_eip}}
+      monitoring_server_eip: ${{steps.apply.outputs.monitoring_server_eip}}
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -70,8 +70,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#          TF_VAR_aws-region: ${{ env.AWS_REGION }} 
-#          TF_VAR_ssh-public-key: "${{ env.SSH_PUBLIC_KEY }}"
         run: |
           terraform apply -auto-approve -lock=false -var="aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" -var="aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
           echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_ENV
