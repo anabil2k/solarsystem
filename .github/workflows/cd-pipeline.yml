@@ -147,7 +147,7 @@ jobs:
       # Use the ubuntu user created earlier to distribute the key to the EC2 instances
       - name: Distribute SSH Key to WebServer and Prometheus
         run: |
-          sudo -u ubuntu chmod 600 /home/user/.ssh/id_rsa
+          sudo -u ubuntu chmod 600 /home/ubuntu/.ssh/id_rsa
           ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.WEB_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
           ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.PROMETHEUS_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
 #          WEB_ELASTIC_IP= ${{ env.WEB_ELASTIC_IP }}
