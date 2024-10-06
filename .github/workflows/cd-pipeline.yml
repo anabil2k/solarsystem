@@ -76,6 +76,8 @@ jobs:
           terraform apply -auto-approve -lock=false -var="aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" -var="aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
           echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_ENV
           echo "monitoring_server_eip=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_ENV
+          echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_OUTPUT
+          echo "monitoring_server_eip=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_OUTPUT
 #          terraform output -raw monitoring_server_eip
 
           
