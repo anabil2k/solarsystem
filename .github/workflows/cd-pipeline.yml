@@ -16,6 +16,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: "us-east-1"
+      WEB_ELASTIC_IP: 
 
     steps:
       # Checkout the repository
@@ -78,9 +79,11 @@ jobs:
       # Save the Elastic IPs as artifacts to use them in the next job
       - name: Save Elastic IPs
         run: |
-          echo "WEB_ELASTIC_IP=$(terraform output -raw web_elastic_ip)" >> $GITHUB_ENV
-          echo "PROMETHEUS_ELASTIC_IP=$(terraform output -raw prometheus_elastic_ip)" >> $GITHUB_ENV
-
+          echo "WEB_ELASTIC_IP=$(terraform output -raw webserver_eip)" >> $GITHUB_ENV
+          echo "PROMETHEUS_ELASTIC_IP=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_ENV
+          echo "WEB SERVER ELASTIC IP: ${{ env.WEB_ELASTIC_IP }}"
+          echo "PROMETHEUS_ELASTIC_IP: ${{ env.PROMETHEUS_ELASTIC_IP }}"
+          
   ansible-deploy:
     name: Install and Deploy Configuration using Ansible
     runs-on: ubuntu-latest
