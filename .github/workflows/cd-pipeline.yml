@@ -141,8 +141,8 @@ jobs:
         run: |
           PUBLIC_KEY=$(sudo cat /home/ubuntu/.ssh/id_rsa.pub)
           echo "SSH_PUBLIC_KEY=$PUBLIC_KEY" >> $GITHUB_ENV
-          echo "WEB_ELASTIC_IP= ${{ needs.provision-infrastructure.outputs.webserver_eip }}" >> $GITHUB_ENV
-          echo "PROMETHEUS_ELASTIC_IP= ${{ needs.provision-infrastructure.outputs.monitoring_server_eip }}" >> $GITHUB_ENV
+          echo "WEB_ELASTIC_IP= ${{needs.provision-infrastructure.outputs.webserver_eip}}" >> $GITHUB_ENV
+          echo "PROMETHEUS_ELASTIC_IP= ${{needs.provision-infrastructure.outputs.monitoring_server_eip}}" >> $GITHUB_ENV
 
 
       # Distribute the generated SSH key to the EC2 instances using temporary SSH key
@@ -152,8 +152,8 @@ jobs:
           
           WEB_ELASTIC_IP= ${{ env.WEB_ELASTIC_IP }}
           PROMETHEUS_ELASTIC_IP= ${{ env.PROMETHEUS_ELASTIC_IP }}
-          ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
-          ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
+          ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.WEB_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
+          ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.PROMETHEUS_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
 
 
 #          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ needs.provision-infrastructure.outputs.webserver_eip }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
