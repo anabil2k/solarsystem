@@ -132,7 +132,7 @@ jobs:
       - name: Generate SSH Key for ubuntu user
         run: |
           sudo -u ubuntu ssh-keygen -t rsa -b 4096 -f /home/ubuntu/.ssh/id_rsa -N ""
-          ls -la ~/.ssh
+          sudo -u ubuntu ls -la ~/.ssh
         # Store the generated public key in the workflow for later use
         id: generate_key
 
