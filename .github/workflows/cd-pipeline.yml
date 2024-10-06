@@ -71,7 +71,7 @@ jobs:
 #          TF_VAR_ssh-public-key: "${{ env.SSH_PUBLIC_KEY }}"
         run: |
           terraform apply -auto-approve -lock=false -var="aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" -var="aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
-#          terraform output -raw monitoring_server_eip
+          terraform output -raw monitoring_server_eip
 #          echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_ENV
 #          echo "monitoring_server_eip=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_ENV
 #          echo "webserver_eip: ${{ env.webserver_eip }}"
