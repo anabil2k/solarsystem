@@ -8,9 +8,12 @@ on:
             - 'feature/*'
 
 jobs:
-  provision-ec2:
-    name: Provision EC2 Instances with Terraform
+  provision-infrastructure:
+    name: Provision Network and EC2 Instances using Terraform
     runs-on: ubuntu-latest
+    outputs:
+      webserver_eip: ${{ steps.set_var.outputs.webserver_eip }}
+      monitoring_server_eip: ${{ steps.set_var.outputs.monitoring_server_eip }}
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -74,16 +77,8 @@ jobs:
           echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_ENV
           echo "monitoring_server_eip=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_ENV
 #          terraform output -raw monitoring_server_eip
-#          echo "webserver_eip: ${{ env.webserver_eip }}"
-#          echo "monitoring_server_eip: ${{ env.monitoring_server_eip }}"
-#          echo "webserver_eip: ${{ env.GITHUB_ENV }}"
+
           
-
-        #run: terraform apply -auto-approve -lock=false 
-        # -lock=false
-        # -var "public_key=$(cat ~/.ssh/temp_id_rsa.pub)"
-        
-
       # Save the Elastic IPs as artifacts to use them in the next job
       - name: Save Elastic IPs
         run: |
@@ -101,7 +96,7 @@ jobs:
   ansible-deploy:
     name: Install and Deploy Configuration using Ansible
     runs-on: ubuntu-latest
-    needs: provision-ec2
+    needs: provision-infrastructure
 
     steps:
       # Checkout the repository
@@ -126,10 +121,14 @@ jobs:
       # Distribute the generated SSH key to the EC2 instances using temporary SSH key
       - name: Distribute SSH Key to WebServer and Prometheus
         run: |
-          echo "WEB SERVER ELASTIC IP: ${{ env.webserver_eip }}"
-          echo "PROMETHEUS_ELASTIC_IP: ${{ env.monitoring_server_eip }}"
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
+          echo "webserver_eip=${{ needs.provision-infrastructure.outputs.webserver_eip }}"
+          echo "monitoring_server_eip=${{ needs.provision-infrastructure.outputs.monitoring_server_eip }}"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.webserver_eip }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.monitoring_server_eip }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
+#          echo "WEB SERVER ELASTIC IP: ${{ env.webserver_eip }}"
+#          echo "PROMETHEUS_ELASTIC_IP: ${{ env.monitoring_server_eip }}"
+#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
+#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
 
       # Update Ansible inventory to use the newly generated SSH key
       - name: Update Ansible Inventory with Elastic IPs and SSH key

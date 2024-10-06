@@ -3,10 +3,6 @@
   hosts: prometheus
   become: yes
   gather_facts: true
-  roles:
-    - role: prometheus.prometheus.prometheus
-    - role: grafana.grafana.grafana
-  
   vars:
     # Prometheus
     # Service Management
@@ -31,7 +27,9 @@
         access: proxy
         url: http://localhost:9090
         is_default: true
-#        basic_auth: false
-#        json_data:
-#          time_field: time
-
+        basic_auth: false
+        json_data:
+          time_field: time
+  roles:
+    - role: prometheus.prometheus.prometheus
+    - role: grafana.grafana.grafana
