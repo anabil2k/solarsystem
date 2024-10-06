@@ -79,10 +79,15 @@ jobs:
       # Save the Elastic IPs as artifacts to use them in the next job
       - name: Save Elastic IPs
         run: |
-          echo "WEB_ELASTIC_IP=$(terraform output -json webserver_eip | jq -r .)" >> $GITHUB_ENV
-          echo "PROMETHEUS_ELASTIC_IP=$(terraform output -json monitoring_server_eip | jq -r .)" >> $GITHUB_ENV
-          echo "WEB SERVER ELASTIC IP: ${{ env.WEB_ELASTIC_IP }}"
-          echo "PROMETHEUS_ELASTIC_IP: ${{ env.PROMETHEUS_ELASTIC_IP }}"
+          echo "webserver_eip=$(terraform output -json webserver_eip | jq -r .)" >> $GITHUB_ENV
+          echo "monitoring_server_eip=$(terraform output -json monitoring_server_eip | jq -r .)" >> $GITHUB_ENV
+          echo "WEB SERVER ELASTIC IP: ${{ env.webserver_eip }}"
+          echo "PROMETHEUS_ELASTIC_IP: ${{ env.monitoring_server_eip }}"
+
+ #         echo "WEB_ELASTIC_IP=$(terraform output -json webserver_eip | jq -r .)" >> $GITHUB_ENV
+ #         echo "PROMETHEUS_ELASTIC_IP=$(terraform output -json monitoring_server_eip | jq -r .)" >> $GITHUB_ENV
+ #         echo "WEB SERVER ELASTIC IP: ${{ env.WEB_ELASTIC_IP }}"
+ #         echo "PROMETHEUS_ELASTIC_IP: ${{ env.PROMETHEUS_ELASTIC_IP }}"
 
   ansible-deploy:
     name: Install and Deploy Configuration using Ansible
