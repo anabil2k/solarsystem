@@ -12,8 +12,8 @@ jobs:
     name: Provision Network and EC2 Instances using Terraform
     runs-on: ubuntu-latest
     outputs:
-      webserver_eip: ${{ steps.set_var.outputs.webserver_eip }}
-      monitoring_server_eip: ${{ steps.set_var.outputs.monitoring_server_eip }}
+      webserver_eip: ${{ steps.export_IPs.outputs.webserver_eip }}
+      monitoring_server_eip: ${{ steps.export_IPs.outputs.monitoring_server_eip }}
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -81,6 +81,7 @@ jobs:
           
       # Save the Elastic IPs as artifacts to use them in the next job
       - name: Save Elastic IPs
+        id: export_IPs
         run: |
           echo "WEB SERVER ELASTIC IP: ${{ env.webserver_eip }}"
           echo "PROMETHEUS_ELASTIC_IP: ${{ env.monitoring_server_eip }}"
