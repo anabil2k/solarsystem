@@ -111,8 +111,12 @@ jobs:
       - name: install ansible
         run: sudo apt update && sudo apt install ansible -y
 
-      - name: install ansible galaxy roles
-        run: ansible-galaxy install -r ./ansible/requirements.yml
+      - name: install ansible galaxy collections
+        run: |
+          ansible-galaxy collection install prometheus.prometheus
+          ansible-galaxy collection install grafana.grafana
+
+#        run: ansible-galaxy install -r ./ansible/requirements.yml
 
 
       # Generate a permanent SSH key for future Ansible connections
