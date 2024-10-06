@@ -76,6 +76,7 @@ jobs:
           echo "webserver_eip: ${{ env.webserver_eip }}"
           echo "monitoring_server_eip: ${{ env.monitoring_server_eip }}"
           echo "webserver_eip: ${{ env.GITHUB_ENV }}"
+          terraform output -raw monitoring_server_eip
 
         #run: terraform apply -auto-approve -lock=false 
         # -lock=false
