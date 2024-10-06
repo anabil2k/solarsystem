@@ -149,7 +149,7 @@ jobs:
           echo "WEB_ELASTIC_IP= ${{ needs.provision-infrastructure.outputs.webserver_eip }}" >> $GITHUB_ENV
           echo "PROMETHEUS_ELASTIC_IP= ${{ needs.provision-infrastructure.outputs.monitoring_server_eip }}" >> $GITHUB_ENV
           # Use the ubuntu user created earlier to distribute the key to the EC2 instances
-          ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@$WEB_ELASTIC_IP "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
+          ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.WEB_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
           ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@$PROMETHEUS_ELASTIC_IP "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
 
 
