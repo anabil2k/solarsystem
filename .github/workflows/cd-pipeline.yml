@@ -144,10 +144,9 @@ jobs:
 
       - name: Distribute SSH Key to WebServer and Prometheus
         run: |
-          sudo -u ubuntu
-          chmod 700 /home/ubuntu/.ssh
-          chmod 400 /home/ubuntu/.ssh/id_rsa
-          ls -la /home/ubuntu/.ssh
+          sudo chmod 700 /home/ubuntu/.ssh
+          sudo chmod 400 /home/ubuntu/.ssh/id_rsa
+          sudo ls -la /home/ubuntu/.ssh
       # Distribute the generated SSH key to the EC2 instances using temporary SSH key
       # Use the ubuntu user created earlier to distribute the key to the EC2 instances
       - name: Distribute SSH Key to WebServer and Prometheus
