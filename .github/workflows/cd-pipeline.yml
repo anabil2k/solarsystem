@@ -125,10 +125,11 @@ jobs:
         run: |
           echo "webserver_eip=${{ needs.provision-infrastructure.outputs.webserver_eip }}" >> $GITHUB_ENV
           echo "monitoring_server_eip=${{ needs.provision-infrastructure.outputs.monitoring_server_eip }}"  >> $GITHUB_ENV
+          echo "WEB SERVER ELASTIC IP: ${{ env.webserver_eip }}"
+          echo "PROMETHEUS_ELASTIC_IP: ${{ env.monitoring_server_eip }}"
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.webserver_eip }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.monitoring_server_eip }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
-#          echo "WEB SERVER ELASTIC IP: ${{ env.webserver_eip }}"
-#          echo "PROMETHEUS_ELASTIC_IP: ${{ env.monitoring_server_eip }}"
+          
 #          ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
 #          ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
 
