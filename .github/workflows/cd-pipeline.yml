@@ -148,6 +148,11 @@ jobs:
       - name: Distribute SSH Key to WebServer and Prometheus
         run: |
           sudo -u ubuntu chmod 600 /home/ubuntu/.ssh/id_rsa
+          sudo -u ubuntu chmod 644 /home/ubuntu/.ssh/authorized_keys
+          sudo -u ubuntu chmod 700 /home/ubuntu/.ssh
+          chmod 600 /home/ubuntu/.ssh/id_rsa
+          chmod 644 /home/ubuntu/.ssh/authorized_keys
+          chmod 700 /home/ubuntu/.ssh
           ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.WEB_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
           ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.PROMETHEUS_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
 #          WEB_ELASTIC_IP= ${{ env.WEB_ELASTIC_IP }}
