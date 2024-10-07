@@ -105,7 +105,7 @@ jobs:
           echo "WEB_SERVER_PRIVATE_IP: ${{ env.webserver_pip }}"
           echo "PROMETHEUS_PRIVATE_IP: ${{ env.monitoring_server_pip }}"
           echo "################## ec2_private_key_pem ########################"
-          echo "WEB_SERVER_PRIVATE_IP: ${{ env.ec2_private_key_pem }}"
+          echo "ec2_private_key_pem: ${{ env.ec2_private_key_pem }}"
           
 #      - name: Output instance details
 #        id: ec2
@@ -123,11 +123,12 @@ jobs:
        # Extract and store the Terraform private key as an artifact for Ansible
       - name: Save EC2 private SSH key for furter Ansible public key distribution
         run: |
-          echo "#### test inserting GITHUB_ENV value to file ###"
-          echo "${{ env.ec2_private_key_pem }}" > ssh_key.pem
-          chmod 600 ssh_key.pem
-          echo "#### test to display GITHUB_OUT value ###"
           echo "${{ steps.apply.outputs.ec2_private_key_pem }}" 
+#          echo "#### test inserting GITHUB_ENV value to file ###"
+#          echo "${{ env.ec2_private_key_pem }}" > ssh_key.pem
+#          chmod 600 ssh_key.pem
+#          echo "#### test to display GITHUB_OUT value ###"
+          
           
 #        id: save_key
 
@@ -157,9 +158,7 @@ jobs:
       # Fetch the SSH private key artifact created in the previous step
       - name: Download SSH Key
         run: |
-          echo "#### test inserting "GITHUB_ENV to key file" to runner ###"
-          cat ssh_key.pem > ~/.ssh/ec2_private_key_pem
-          chmod 600 ~/.ssh/ec2_private_key_pem
+          
           echo "#### test inserting JOB GITHUB_OUT to runner ###"
           echo '${{ needs.provision-infrastructure.outputs.ec2_private_key_pem }}' >> ~/.ssh/ec2_private_key_pem2
           chmod 600 ~/.ssh/ec2_private_key_pem2
@@ -167,6 +166,9 @@ jobs:
           echo '${{ env.ec2_private_key_pem }}' >> ~/.ssh/ec2_private_key_pem3
           chmod 600 ~/.ssh/ec2_private_key_pem3
           ls -la ~/.ssh
+#          echo "#### test inserting "GITHUB_ENV to key file" to runner ###"
+#          cat ssh_key.pem > ~/.ssh/ec2_private_key_pem
+#          chmod 600 ~/.ssh/ec2_private_key_pem
 
       # Step 2: Install Ansible using the ubuntu user
       - name: Install Ansible as ubuntu user
