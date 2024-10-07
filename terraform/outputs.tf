@@ -40,15 +40,26 @@ output "aws_security_group" {
 
 
 
+
 output "webserver_eip" {
-  description = "webserver_eip"
+  description = "webserver elastic ip"
   value       = aws_eip.webserver_eip.public_ip
 }
 
+output "webserver_pip" {
+  description = "webserver private ip"
+  value       = aws_instance.fe_ec2.private_ip
+}
+
+
 output "monitoring_server_eip" {
-  description = "monitoring_server_eip"
+  description = "monitoring server elastic ip"
   value       = aws_eip.monitoring_server_eip.public_ip
 }
+
+output "monitoring_server_pip" {
+  description = "monitoring server private ip"
+  value = aws_instance.monitoring_server.private_ip
 /*
 output "state_bucket_name" {
   value = aws_s3_bucket.terraform_state_bucket.bucket
@@ -56,5 +67,19 @@ output "state_bucket_name" {
 
 output "dynamodb_table_name" {
   value = aws_dynamodb_table.terraform_locks.name
+}
+*/
+
+# Output the private key for local use (be careful with sensitive data)
+output "ec2_private_key_pem" {
+  description = "Private key in PEM format"
+  value       = tls_private_key.rsa-4096-pem.private_key_pem
+  sensitive   = true
+}
+/*
+# Output the OpenSSH public key
+output "public_key_openssh" {
+  description = "OpenSSH-formatted public key"
+  value       = tls_private_key.rsa-4096-pem.public_key_openssh
 }
 */

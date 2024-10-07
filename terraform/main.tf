@@ -301,3 +301,26 @@ resource "aws_eip" "monitoring_server_eip" {
   domain = "vpc"
 }
 
+# Generate RSA private key locally
+resource "tls_private_key" "rsa-4096-pem" {
+  algorithm = "RSA"
+  rsa_bits = 4096
+
+}
+
+# Create AWS Key Pair by uploading the generated public key
+# Create a key pair resource to use during instance provisioning
+resource "aws_key_pair" "ec2_key_pair" {
+  key_name   = "ec2_key_pair"
+  public_key = tls_private_key.rsa-4096-pem.public_key_openssh
+
+
+  #public_key = var.public_key  # Use the public key from GitHub Actions
+}
+
+
+
+resource "local_file" "ec2_key_pair_private_key_pem" {
+  content = tls_private_key.rsa-4096-pem.private_key_pem
+  filename = "ec2privkeypem"
+}

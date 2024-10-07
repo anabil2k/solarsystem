@@ -84,6 +84,12 @@ jobs:
         run: |
           echo "WEB SERVER ELASTIC IP: ${{ env.webserver_eip }}"
           echo "PROMETHEUS_ELASTIC_IP: ${{ env.monitoring_server_eip }}"
+          
+      - name: Output instance details
+        id: ec2
+        run: |
+            echo "WEB SERVER Private IP: $(terraform output -raw webserver_pip)"
+            echo "PROMETHEUS_Private_IP: $(terraform output -raw monitoring_server_pip)"
 #          echo "webserver_eip=$(terraform output -json webserver_eip | jq -r .)" >> $GITHUB_ENV
 #          echo "monitoring_server_eip=$(terraform output -json monitoring_server_eip | jq -r .)" >> $GITHUB_ENV
 
@@ -92,6 +98,12 @@ jobs:
  #         echo "PROMETHEUS_ELASTIC_IP=$(terraform output -json monitoring_server_eip | jq -r .)" >> $GITHUB_ENV
  #         echo "WEB SERVER ELASTIC IP: ${{ env.WEB_ELASTIC_IP }}"
  #         echo "PROMETHEUS_ELASTIC_IP: ${{ env.PROMETHEUS_ELASTIC_IP }}"
+       # Extract and store the Terraform private key as an artifact for Ansible
+      - name: Save EC2 private SSH key for furter Ansible public key distribution
+        run: |
+         echo "${{ steps.apply.outputs.ec2_private_key_pem }}" > ssh_key.pem
+         chmod 600 ssh_key.pem
+        id: save_key
 
   ansible-deploy:
     name: Install and Deploy Configuration using Ansible
@@ -104,24 +116,36 @@ jobs:
         uses: actions/checkout@v2
 
       # Step 1: Create a new user 'ubuntu'
-      - name: Create ubuntu user
-        run: |
-          sudo useradd -m ubuntu -s /bin/bash
-          echo "ubuntu ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/ubuntu
+#      - name: Create ubuntu user
+#        run: |
+#          sudo useradd -m ubuntu -s /bin/bash
+#          echo "ubuntu ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/ubuntu
 
       # Step 2: Install Ansible and set permissions for the ubuntu user
 
       # Step 2: Install Ansible using the ubuntu user
+#      - name: Install Ansible as ubuntu user
+#        run: |
+#         sudo -u ubuntu bash -c 'sudo apt update && sudo apt install -y ansible'
+
+      # Fetch the SSH private key artifact created in the previous step
+      - name: Download SSH Key
+        run: |
+          cat ssh_key.pem > ~/.ssh/ec2_private_key_pem
+          chmod 600 ~/.ssh/ec2_private_key_pem
+
+      # Step 2: Install Ansible using the ubuntu user
       - name: Install Ansible as ubuntu user
         run: |
-         sudo -u ubuntu bash -c 'sudo apt update && sudo apt install -y ansible'
-      
+         sudo apt update && sudo apt install -y ansible
 
       # step 3: install ansible galaxy collections as ubuntu user
       - name: install ansible galaxy collections
         run: |
-          sudo -u ubuntu bash -c 'ansible-galaxy collection install prometheus.prometheus'
-          sudo -u ubuntu bash -c 'ansible-galaxy collection install grafana.grafana'
+          ansible-galaxy collection install prometheus.prometheus
+          ansible-galaxy collection install grafana.grafana
+#          sudo -u ubuntu bash -c 'ansible-galaxy collection install prometheus.prometheus'
+#          sudo -u ubuntu bash -c 'ansible-galaxy collection install grafana.grafana'
 
 #        run: ansible-galaxy install -r ./ansible/requirements.yml
 
@@ -129,30 +153,43 @@ jobs:
       # Step 3: Switch to ubuntu user and generate SSH key
       - name: Generate SSH Key for ubuntu user
         run: |
-          sudo -u ubuntu ssh-keygen -t rsa -b 4096 -f /home/ubuntu/.ssh/id_rsa -N ""
-          sudo -u ubuntu ls -la /home/ubuntu/.ssh
+          ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
+          chmod 600 ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa.pub
+          ls -la ~/.ssh
+
+#          sudo -u ubuntu ls -la ~/.ssh
+#          sudo -u ubuntu ssh-keygen -t rsa -b 4096 -f /home/ubuntu/.ssh/id_rsa -N ""
+#          sudo -u ubuntu ls -la /home/ubuntu/.ssh
         # Store the generated public key in the workflow for later use
         id: generate_key
 
       # Step 4: Save the SSH key as a secret or artifact for future jobs
       - name: Save Public SSH Key for further EC2s distribution
         run: |
-          PUBLIC_KEY=$(sudo cat /home/ubuntu/.ssh/id_rsa.pub)
+          PUBLIC_KEY=$(sudo cat ~/.ssh/id_rsa.pub)
           echo "SSH_PUBLIC_KEY=$PUBLIC_KEY" >> $GITHUB_ENV
           echo "WEB_ELASTIC_IP=${{needs.provision-infrastructure.outputs.webserver_eip}}" >> $GITHUB_ENV
           echo "PROMETHEUS_ELASTIC_IP=${{needs.provision-infrastructure.outputs.monitoring_server_eip}}" >> $GITHUB_ENV
+#          PUBLIC_KEY=$(sudo cat /home/ubuntu/.ssh/id_rsa.pub)
 
-      - name: Distribute SSH Key to WebServer and Prometheus
-        run: |
-          sudo chmod 700 /home/ubuntu/.ssh
-          sudo chmod 400 /home/ubuntu/.ssh/id_rsa
-          sudo ls -la /home/ubuntu/.ssh
+#      - name: Distribute SSH Key to WebServer and Prometheus
+#        run: |
+#          sudo chmod 700 /home/ubuntu/.ssh
+#          sudo chmod 400 /home/ubuntu/.ssh/id_rsa
+#          sudo ls -la /home/ubuntu/.ssh
       # Distribute the generated SSH key to the EC2 instances using temporary SSH key
       # Use the ubuntu user created earlier to distribute the key to the EC2 instances
       - name: Distribute SSH Key to WebServer and Prometheus
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_PRIVATE_KEY }}
         run: |
-          sudo -u ubuntu bash -c 'ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.WEB_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"'
-          ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.PROMETHEUS_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
+#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
+#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
+#          sudo -u ubuntu bash -c 'ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.WEB_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"'
+#          ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.PROMETHEUS_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
 #          chmod 600 /home/ubuntu/.ssh/id_rsa
 #          chmod 700 /home/ubuntu/.ssh
 #          sudo -u ubuntu chmod 644 /home/ubuntu/.ssh/authorized_keys          
