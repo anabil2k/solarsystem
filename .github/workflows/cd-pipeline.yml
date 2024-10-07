@@ -14,6 +14,7 @@ jobs:
     outputs:
       webserver_eip: ${{steps.apply.outputs.webserver_eip}}
       monitoring_server_eip: ${{steps.apply.outputs.monitoring_server_eip}}
+      ec2_private_key_pem: ${{steps.apply.outputs.ec2_private_key_pem}}
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -74,22 +75,30 @@ jobs:
           terraform apply -auto-approve -lock=false -var="aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" -var="aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
           echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_ENV
           echo "monitoring_server_eip=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_ENV
+          echo "webserver_pip: $(terraform output -raw webserver_pip)" >> $GITHUB_ENV
+          echo "monitoring_server_pip: $(terraform output -raw monitoring_server_pip)" >> $GITHUB_ENV
           echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_OUTPUT
           echo "monitoring_server_eip=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_OUTPUT
+          echo "ec2_private_key_pem=$(terraform output -raw ec2_private_key_pem)" >> $GITHUB_OUTPUT
+          
 #          terraform output -raw monitoring_server_eip
 
           
       # Save the Elastic IPs as artifacts to use them in the next job
       - name: Save Elastic IPs
         run: |
-          echo "WEB SERVER ELASTIC IP: ${{ env.webserver_eip }}"
+          echo "################## Public IPs ########################"
+          echo "WEB_SERVER_ELASTIC_IP: ${{ env.webserver_eip }}"
           echo "PROMETHEUS_ELASTIC_IP: ${{ env.monitoring_server_eip }}"
+          echo "################## Private IPs ########################"
+          echo "WEB_SERVER_PRIVATE_IP: ${{ env.webserver_pip }}"
+          echo "PROMETHEUS_PRIVATE_IP: ${{ env.monitoring_server_pip }}"
           
-      - name: Output instance details
-        id: ec2
-        run: |
-            echo "WEB SERVER Private IP: $(terraform output -raw webserver_pip)"
-            echo "PROMETHEUS_Private_IP: $(terraform output -raw monitoring_server_pip)"
+#      - name: Output instance details
+#        id: ec2
+#        run: |
+#nwh            echo "WEB SERVER Private IP: $(terraform output -raw webserver_pip)"
+#nwh           echo "PROMETHEUS_Private_IP: $(terraform output -raw monitoring_server_pip)"
 #          echo "webserver_eip=$(terraform output -json webserver_eip | jq -r .)" >> $GITHUB_ENV
 #          echo "monitoring_server_eip=$(terraform output -json monitoring_server_eip | jq -r .)" >> $GITHUB_ENV
 
@@ -101,9 +110,13 @@ jobs:
        # Extract and store the Terraform private key as an artifact for Ansible
       - name: Save EC2 private SSH key for furter Ansible public key distribution
         run: |
-         echo "${{ steps.apply.outputs.ec2_private_key_pem }}" > ssh_key.pem
-         chmod 600 ssh_key.pem
-        id: save_key
+          echo "#### test inserting GITHUB_ENV value to file ###"
+          echo "${{ env.ec2_private_key_pem }}" > ssh_key.pem
+          chmod 600 ssh_key.pem
+          echo "#### test to display GITHUB_OUT value ###"
+          echo "${{ steps.apply.outputs.ec2_private_key_pem }}" 
+          
+#        id: save_key
 
   ansible-deploy:
     name: Install and Deploy Configuration using Ansible
@@ -131,8 +144,16 @@ jobs:
       # Fetch the SSH private key artifact created in the previous step
       - name: Download SSH Key
         run: |
+          echo "#### test inserting "GITHUB_ENV to key file" to runner ###"
           cat ssh_key.pem > ~/.ssh/ec2_private_key_pem
           chmod 600 ~/.ssh/ec2_private_key_pem
+          echo "#### test inserting JOB GITHUB_OUT to runner ###"
+          echo '${{ needs.provision-infrastructure.outputs.ec2_private_key_pem }}' >> ~/.ssh/ec2_private_key_pem2
+          chmod 600 ~/.ssh/ec2_private_key_pem2
+          echo "#### test inserting "GITHUB_ENV from prev job  to runner ###"
+          echo '${{ env.ec2_private_key_pem }}' >> ~/.ssh/ec2_private_key_pem3
+          chmod 600 ~/.ssh/ec2_private_key_pem3
+          ls -la ~/.ssh
 
       # Step 2: Install Ansible using the ubuntu user
       - name: Install Ansible as ubuntu user
@@ -186,6 +207,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
+          ls -la ~/.ssh
 #          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
 #          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
 #          sudo -u ubuntu bash -c 'ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.WEB_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"'
