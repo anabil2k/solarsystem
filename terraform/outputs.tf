@@ -60,6 +60,7 @@ output "monitoring_server_eip" {
 output "monitoring_server_pip" {
   description = "monitoring server private ip"
   value = aws_instance.monitoring_server.private_ip
+}
 /*
 output "state_bucket_name" {
   value = aws_s3_bucket.terraform_state_bucket.bucket
