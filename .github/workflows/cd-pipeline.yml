@@ -180,8 +180,8 @@ jobs:
           chmod 600 ~/.ssh/ec2_private_key_pem3
           ls -la ~/.ssh
           echo "#### test inserting "GITHUB_ENV to key file" to runner ###"
-          cat ssh_key.pem > ~/.ssh/ec2_private_key_pem
-          chmod 600 ~/.ssh/ec2_private_key_pem
+#          cat ssh_key.pem > ~/.ssh/ec2_private_key_pem
+#          chmod 600 ~/.ssh/ec2_private_key_pem
 
       # Step 2: Install Ansible using the ubuntu user
       - name: Install Ansible as ubuntu user
