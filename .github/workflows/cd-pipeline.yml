@@ -79,7 +79,13 @@ jobs:
           echo "monitoring_server_pip: $(terraform output -raw monitoring_server_pip)" >> $GITHUB_ENV
           echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_OUTPUT
           echo "monitoring_server_eip=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_OUTPUT
-          echo "ec2_private_key_pem=$(terraform output -raw ec2_private_key_pem)" >> $GITHUB_OUTPUT
+          echo "ec2_private_key_pem<<EOF" >> $GITHUB_OUT
+          echo "$ec2_private_key_pem" >> $GITHUB_OUT
+          echo "EOF" >> $GITHUB_OUTecho "ec2_private_key_pem<<EOF" >> $GITHUB_ENV
+          echo "$ec2_private_key_pem" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+#          echo "ec2_private_key_pem=$(terraform output -raw ec2_private_key_pem)" >> $GITHUB_OUTPUT
+
           
 #          terraform output -raw monitoring_server_eip
 
@@ -93,6 +99,8 @@ jobs:
           echo "################## Private IPs ########################"
           echo "WEB_SERVER_PRIVATE_IP: ${{ env.webserver_pip }}"
           echo "PROMETHEUS_PRIVATE_IP: ${{ env.monitoring_server_pip }}"
+          echo "################## ec2_private_key_pem ########################"
+          echo "WEB_SERVER_PRIVATE_IP: ${{ env.ec2_private_key_pem }}"
           
 #      - name: Output instance details
 #        id: ec2
