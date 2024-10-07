@@ -89,7 +89,7 @@ jobs:
           echo "ec2_private_key_pem<<EOF" >> $GITHUB_ENV
           echo "$ec2_private_key_pem" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-          echo "ec2_private_key_pem=$(terraform output -raw ec2_private_key_pem)" >> $GITHUB_OUT
+#          echo "ec2_private_key_pem=$(terraform output -raw ec2_private_key_pem)" >> $GITHUB_OUT
 
           
 #          terraform output -raw monitoring_server_eip
