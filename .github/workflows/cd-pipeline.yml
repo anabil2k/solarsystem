@@ -156,6 +156,19 @@ jobs:
 #         sudo -u ubuntu bash -c 'sudo apt update && sudo apt install -y ansible'
 
       # Fetch the SSH private key artifact created in the previous step
+      # Step 3: Switch to ubuntu user and generate SSH key
+      - name: Generate SSH Key for ubuntu user
+        run: |
+            ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
+            chmod 600 ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa.pub
+            ls -la ~/.ssh
+    
+    #          sudo -u ubuntu ls -la ~/.ssh
+    #          sudo -u ubuntu ssh-keygen -t rsa -b 4096 -f /home/ubuntu/.ssh/id_rsa -N ""
+    #          sudo -u ubuntu ls -la /home/ubuntu/.ssh
+            # Store the generated public key in the workflow for later use
+        id: generate_key
       - name: Download SSH Key
         run: |
           
@@ -166,9 +179,9 @@ jobs:
           echo '${{ env.ec2_private_key_pem }}' >> ~/.ssh/ec2_private_key_pem3
           chmod 600 ~/.ssh/ec2_private_key_pem3
           ls -la ~/.ssh
-#          echo "#### test inserting "GITHUB_ENV to key file" to runner ###"
-#          cat ssh_key.pem > ~/.ssh/ec2_private_key_pem
-#          chmod 600 ~/.ssh/ec2_private_key_pem
+          echo "#### test inserting "GITHUB_ENV to key file" to runner ###"
+          cat ssh_key.pem > ~/.ssh/ec2_private_key_pem
+          chmod 600 ~/.ssh/ec2_private_key_pem
 
       # Step 2: Install Ansible using the ubuntu user
       - name: Install Ansible as ubuntu user
@@ -186,19 +199,7 @@ jobs:
 #        run: ansible-galaxy install -r ./ansible/requirements.yml
 
 
-      # Step 3: Switch to ubuntu user and generate SSH key
-      - name: Generate SSH Key for ubuntu user
-        run: |
-          ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
-          chmod 600 ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa.pub
-          ls -la ~/.ssh
 
-#          sudo -u ubuntu ls -la ~/.ssh
-#          sudo -u ubuntu ssh-keygen -t rsa -b 4096 -f /home/ubuntu/.ssh/id_rsa -N ""
-#          sudo -u ubuntu ls -la /home/ubuntu/.ssh
-        # Store the generated public key in the workflow for later use
-        id: generate_key
 
       # Step 4: Save the SSH key as a secret or artifact for future jobs
       - name: Save Public SSH Key for further EC2s distribution
