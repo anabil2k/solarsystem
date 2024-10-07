@@ -75,16 +75,20 @@ jobs:
           terraform apply -auto-approve -lock=false -var="aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" -var="aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
           echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_ENV
           echo "monitoring_server_eip=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_ENV
+          echo "#################################"
           echo "webserver_pip: $(terraform output -raw webserver_pip)" >> $GITHUB_ENV
           echo "monitoring_server_pip: $(terraform output -raw monitoring_server_pip)" >> $GITHUB_ENV
+          echo "#################################"
           echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_OUTPUT
           echo "monitoring_server_eip=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_OUTPUT
+          echo "#################################"
           echo "ec2_private_key_pem<<EOF" >> $GITHUB_OUTPUT
           echo "$ec2_private_key_pem" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-          echo "ec2_private_key_pem<<EOF" >> $GITHUB_ENV
-          echo "$ec2_private_key_pem" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "#################################"
+#          echo "ec2_private_key_pem<<EOF" >> $GITHUB_ENV
+#          echo "$ec2_private_key_pem" >> $GITHUB_ENV
+#          echo "EOF" >> $GITHUB_ENV
 #          echo "ec2_private_key_pem=$(terraform output -raw ec2_private_key_pem)" >> $GITHUB_OUT
 
           
