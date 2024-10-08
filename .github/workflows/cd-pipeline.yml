@@ -82,7 +82,7 @@ jobs:
           echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_OUTPUT
           echo "monitoring_server_eip=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_OUTPUT
           echo "#################################"
-          echo "ec2_private_key_base64=$(terraform output -raw ec2_private_key_base64" >> $GITHUB_OUTPUT
+          echo "ec2_private_key_base64=$(terraform output -raw ec2_private_key_base64)" >> $GITHUB_OUTPUT
           echo "ec2_private_key_base64=$(terraform output -raw ec2_private_key_base64)" >> $GITHUB_ENV
           
 #          echo "ec2_private_key_pem<<EOF" >> $GITHUB_OUTPUT
