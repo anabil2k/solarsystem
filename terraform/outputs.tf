@@ -77,6 +77,12 @@ output "ec2_private_key_pem" {
   value       = tls_private_key.rsa-4096-pem.private_key_pem
   sensitive   = true
 }
+
+# Base64 encode the private key for environment variable compatibility
+output "ec2_private_key_base64" {
+  value     = base64encode(tls_private_key.rsa-4096-pem.private_key_pem)
+  sensitive = true
+}
 /*
 # Output the OpenSSH public key
 output "public_key_openssh" {
