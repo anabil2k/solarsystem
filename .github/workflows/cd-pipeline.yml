@@ -278,6 +278,12 @@ jobs:
 
       # Run Ansible playbook to publish website
       - name: Run Ansible Playbook
+#        working-directory: ./ansible/
+        run: ansible-playbook  -i ./ansible/inventory.ini ./ansible/publish-web.yml
+
+
+      # Run Ansible playbook to publish website
+      - name: Run Ansible Playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
           inventory: ./ansible/inventory.ini
