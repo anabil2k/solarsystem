@@ -2,7 +2,7 @@
 
 
 - name: Copy files to WebServer
-  hosts: webserver
+  hosts: web_instance
   tasks:
     - name: Transfer files to webserver
       copy:
