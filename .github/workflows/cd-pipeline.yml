@@ -262,7 +262,9 @@ jobs:
       # Update Ansible inventory to use the newly generated SSH key
       - name: Update Ansible Inventory with Elastic IPs and SSH key
         run: |
-          echo "[webserver]" > ~/ansible/inventory.ini
+          pwd
+          ls -la ~/ansible
+          echo "[webserver]" >> ~/ansible/inventory.ini
           echo "web_instance ansible_host=${{ env.WEB_ELASTIC_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> ./ansible/inventory.ini
           echo "[prometheus]" >> ~/ansible/inventory.ini
           echo "prometheus_instance ansible_host=${{ env.PROMETHEUS_ELASTIC_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> ./ansible/inventory.ini
