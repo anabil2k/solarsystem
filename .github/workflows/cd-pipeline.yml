@@ -273,6 +273,7 @@ jobs:
           cat inventory.ini
       # check servers' connectivity
       - name: ping servers
+        working-directory: ./ansible
         run: ansible all -i inventory.ini -m ping
 
       # Run Ansible playbook to publish website
@@ -281,6 +282,7 @@ jobs:
         with:
           inventory: ./ansible/inventory.ini
           playbook: ./ansible/publish-web.yml
+        
 
       # Run Ansible playbook to install and configure monitoring 
       - name: Run Ansible Playbook
