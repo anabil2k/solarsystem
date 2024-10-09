@@ -277,6 +277,12 @@ jobs:
         run: ansible all -i inventory.ini -m ping
 
       # Run Ansible playbook to install and configure monitoring 
+      - name:  Run Ansible playbook to install and configure monitoring 
+#        working-directory: ./ansible/
+        run: ansible-playbook  -i ./ansible/inventory.ini ./ansible/install-config-monitoring.yml
+
+
+      # Run Ansible playbook to install and configure monitoring 
       - name: Run Ansible playbook to install and configure monitoring
         uses: dawidd6/action-ansible-playbook@v2
         with:
