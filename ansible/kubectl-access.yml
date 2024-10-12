@@ -16,7 +16,7 @@
       file:
         path: ~/.kube
         state: directory
-        mode: '777'
+        mode: '0755'
 
     - name: Save K3s kubeconfig for kubectl access
       local_action:
