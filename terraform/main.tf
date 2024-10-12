@@ -333,6 +333,18 @@ resource "aws_instance" "k3s_ec2" {
   subnet_id = aws_subnet.public_subnet_1.id
   key_name      = "ec2_key_pair"
   vpc_security_group_ids = [aws_security_group.k3s_sec_group.id]
+  user_data = <<-EOF
+    #!/bin/bash
+    # Update and install necessary packages
+    sudo apt-get update -y
+    sudo setenforce 0
+    sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+    sudo ufw allow 22/tcp
+    sudo ufw allow 6443/tcp
+    sudo ufw allow 8472/udp
+    sudo ufw allow 10250/tcp
+    sudo ufw allow 10255/tcp
+  EOF
   root_block_device {
     volume_size = 20
   }
