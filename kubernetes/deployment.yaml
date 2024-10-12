@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: solarsystem-deployment
+  namespace: prod-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: solarsystem
+  template:
+    metadata:
+      labels:
+        app: solarsystem
+    spec:
+      containers:
+      - name: solarsystem-container
+        image: anabil2k/solarsystem:v1.0.0
+        ports:
+        - containerPort: 3000

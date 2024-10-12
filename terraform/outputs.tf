@@ -90,3 +90,14 @@ output "public_key_openssh" {
   value       = tls_private_key.rsa-4096-pem.public_key_openssh
 }
 */
+
+
+output "k3s_server_eip" {
+  description = "k3s server elastic ip"
+  value       = aws_eip.k3s_server_eip.public_ip
+}
+
+output "k3s_server_pip" {
+  description = "k3s server private ip"
+  value = aws_instance.k3s_ec2.private_ip
+}

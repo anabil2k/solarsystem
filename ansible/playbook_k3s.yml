@@ -1,0 +1,28 @@
+---
+- hosts: k3s
+  become: yes
+  tasks:
+    - name: Update and install dependencies
+      apt:
+        update_cache: yes
+        name:
+          - curl
+          - docker.io
+          - apt-transport-https
+
+    - name: Install K3s via the K3s installer script
+      shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--write-kubeconfig-mode 644" sh -
+
+    - name: Ensure K3s is running
+      shell: |
+        systemctl status k3s
+
+    - name: Retrieve K3s kubeconfig
+      shell: cat /etc/rancher/k3s/k3s.yaml
+      register: k3s_kubeconfig
+
+    - name: Save K3s kubeconfig for kubectl access
+      local_action:
+        module: copy
+        content: "{{ k3s_kubeconfig.stdout }}"
+        dest: ~/.kube/config

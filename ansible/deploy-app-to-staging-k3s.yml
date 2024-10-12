@@ -1,0 +1,12 @@
+---
+- hosts: k3s
+  become: yes
+  tasks:
+    - name: deploy the dockerized app to staging environment
+      shell: |
+        kubectl create ns staging-ns
+        kubectl create deploy solarsystem --image=anabil2k/solarsystem:v1.0.0 -r=1 -n staging-ns
+        kubectl expose deploy solarsystem --port=3001 --target-port=3000 -n staging-ns
+
+    - name: check all kubernetes resources in the staging-ns namespace
+      shell: kubectl get all -n staging-ns

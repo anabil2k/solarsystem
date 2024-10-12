@@ -7,7 +7,7 @@
     - name: Transfer files to webserver
       copy:
         src: index.html
-        dest: ./var/www/html/
+        dest: /var/www/html/
 
 #- name: Copy files to PrometheusServer
 #  hosts: prometheus

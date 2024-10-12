@@ -85,7 +85,7 @@ resource "aws_subnet" "private_subnet_1" {
   }
 }
 
-
+/*
 # Eip for NAT Gateway
 resource "aws_eip" "nat_gateway_1_eip" {
   domain = "vpc"
@@ -104,6 +104,7 @@ resource "aws_nat_gateway" "nat_gateway_1" {
   }
 }
 
+*/
 
 # Route Tables
 resource "aws_route_table" "public_route_table" {
@@ -127,12 +128,12 @@ resource "aws_route_table_association" "public_subnet_1_association" {
 
 resource "aws_route_table" "private_route_table_1" {
   vpc_id = aws_vpc.main_vpc.id
-
+/*
   route {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat_gateway_1.id
   }
-
+*/
   tags = {
     Name = "${var.environment_name} Private Routes (AZ1)"
   }
@@ -323,4 +324,65 @@ resource "aws_key_pair" "ec2_key_pair" {
 resource "local_file" "ec2_key_pair_private_key_pem" {
   content = tls_private_key.rsa-4096-pem.private_key_pem
   filename = "ec2privkeypem"
+}
+
+# provisioning k3s ec2
+resource "aws_instance" "k3s_ec2" {
+  ami           = var.ec2_ami
+  instance_type = var.ec2_type
+  subnet_id = aws_subnet.public_subnet_1.id
+  key_name      = "ec2_key_pair"
+  vpc_security_group_ids = [aws_security_group.k3s_sec_group.id]
+  root_block_device {
+    volume_size = 20
+  }
+
+  tags = {
+    Name = "K3s-Node"
+  }
+  depends_on = [aws_security_group.k3s_sec_group]
+}
+
+resource "aws_eip" "k3s_server_eip" {
+  instance = aws_instance.k3s_ec2.id
+  domain = "vpc"
+}
+ 
+# Security Group for Prometheus and Grafana Server
+resource "aws_security_group" "k3s_sec_group" {
+  description = "Allow HTTP, solarsystem port, and SSH traffic"
+  vpc_id      = aws_vpc.main_vpc.id
+
+  ingress {
+    protocol    = "tcp"
+    from_port   = 80
+    to_port     = 80
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    protocol    = "tcp"
+    from_port   = 3000  # Grafana
+    to_port     = 3000
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
+  ingress {
+    protocol    = "tcp"
+    from_port   = 22
+    to_port     = 22
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.environment_name}-K3sSecurityGroup"
+  }
 }

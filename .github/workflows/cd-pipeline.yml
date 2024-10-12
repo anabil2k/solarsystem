@@ -14,6 +14,7 @@ jobs:
     outputs:
       webserver_eip: ${{steps.apply.outputs.webserver_eip}}
       monitoring_server_eip: ${{steps.apply.outputs.monitoring_server_eip}}
+      k3s_server_eip: ${{steps.apply.outputs.k3s_server_eip}}
       ec2_private_key_base64: ${{steps.apply.outputs.ec2_private_key_base64}}
 
     env:
@@ -75,12 +76,15 @@ jobs:
           terraform apply -auto-approve -lock=false -var="aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" -var="aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
           echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_ENV
           echo "monitoring_server_eip=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_ENV
+          echo "k3s_server_eip=$(terraform output -raw k3s_server_eip)" >> $GITHUB_ENV
           echo "#################################"
           echo "webserver_pip=$(terraform output -raw webserver_pip)" >> $GITHUB_ENV
           echo "monitoring_server_pip=$(terraform output -raw monitoring_server_pip)" >> $GITHUB_ENV
+          echo "k3s_server_pip=$(terraform output -raw k3s_server_pip)" >> $GITHUB_ENV
           echo "#################################"
           echo "webserver_eip=$(terraform output -raw webserver_eip)" >> $GITHUB_OUTPUT
           echo "monitoring_server_eip=$(terraform output -raw monitoring_server_eip)" >> $GITHUB_OUTPUT
+          echo "k3s_server_eip=$(terraform output -raw k3s_server_eip)" >> $GITHUB_OUTPUT
           echo "#################################"
           echo "ec2_private_key_base64=$(terraform output -raw ec2_private_key_base64)" >> $GITHUB_OUTPUT
           echo "ec2_private_key_base64=$(terraform output -raw ec2_private_key_base64)" >> $GITHUB_ENV
@@ -106,9 +110,11 @@ jobs:
           echo "################## Public IPs ########################"
           echo "WEB_SERVER_ELASTIC_IP: ${{ env.webserver_eip }}"
           echo "PROMETHEUS_ELASTIC_IP: ${{ env.monitoring_server_eip }}"
+          echo "k3s_SERVER_ELASTIC_IP: ${{ env.k3s_server_eip }}"
           echo "################## Private IPs ########################"
           echo "WEB_SERVER_PRIVATE_IP: ${{ env.webserver_pip }}"
           echo "PROMETHEUS_PRIVATE_IP: ${{ env.monitoring_server_pip }}"
+          echo "k3s_PRIVATE_IP: ${{ env.k3s_server_pip }}"
           echo "################## ec2_private_key_pem ########################"
           echo "ec2_private_key_base64: ${{ env.ec2_private_key_base64 }}"
           
@@ -219,6 +225,7 @@ jobs:
           echo "SSH_PUBLIC_KEY=$PUBLIC_KEY" >> $GITHUB_ENV
           echo "WEB_ELASTIC_IP=${{needs.provision-infrastructure.outputs.webserver_eip}}" >> $GITHUB_ENV
           echo "PROMETHEUS_ELASTIC_IP=${{needs.provision-infrastructure.outputs.monitoring_server_eip}}" >> $GITHUB_ENV
+          echo "k3s_ELASTIC_IP=${{needs.provision-infrastructure.outputs.k3s_server_eip}}" >> $GITHUB_ENV
 #          PUBLIC_KEY=$(sudo cat /home/ubuntu/.ssh/id_rsa.pub)
 
 #      - name: Distribute SSH Key to WebServer and Prometheus
@@ -234,6 +241,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
           ls -la ~/.ssh
 #          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
 #          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
@@ -270,6 +278,8 @@ jobs:
           echo "web_instance ansible_host=${{ env.WEB_ELASTIC_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> inventory.ini
           echo "[prometheus]" >> inventory.ini
           echo "prometheus_instance ansible_host=${{ env.PROMETHEUS_ELASTIC_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> inventory.ini
+          echo "[k3s]" >> inventory.ini
+          echo "k3s_instance ansible_host=${{ env.k3s_ELASTIC_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> inventory.ini
           cat inventory.ini
       # check servers' connectivity
       - name: ping servers
@@ -283,24 +293,32 @@ jobs:
 
 
       # Run Ansible playbook to install and configure monitoring 
-      - name: Run Ansible playbook to install and configure monitoring
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          inventory: ./ansible/inventory.ini
-          playbook: ./ansible/install-config-monitoring.yml
+#      - name: Run Ansible playbook to install and configure monitoring
+#        uses: dawidd6/action-ansible-playbook@v2
+#        with:
+#          inventory: ./ansible/inventory.ini
+#          playbook: ./ansible/install-config-monitoring.yml
 
       # Run Ansible playbook to publish website
       - name: Run Ansible Playbook
 #        working-directory: ./ansible/
-        run: ansible-playbook  -i ./ansible/inventory.ini ./ansible/publish-web.yml
-
+        run: |
+          chmod 644 index.html
+          ansible-playbook  -i ./ansible/inventory.ini ./ansible/publish-web.yml
 
       # Run Ansible playbook to publish website
       - name: Run Ansible Playbook
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          inventory: ./ansible/inventory.ini
-          playbook: ./ansible/publish-web.yml
+#        working-directory: ./ansible/
+        run: |
+          ansible-playbook  -i ./ansible/inventory.ini ./ansible/playbook_k3s.yml
+
+
+      # Run Ansible playbook to publish website
+#      - name: Run Ansible Playbook
+#        uses: dawidd6/action-ansible-playbook@v2
+#        with:
+#          inventory: ./ansible/inventory.ini
+#          playbook: ./ansible/publish-web.yml
         
 
       
