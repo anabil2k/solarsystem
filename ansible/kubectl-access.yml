@@ -3,17 +3,6 @@
   become: yes
   gather_facts: true
   tasks:
-    - name: Update and install dependencies
-      apt:
-        update_cache: yes
-        name:
-          - curl
-          - docker.io
-          - apt-transport-https
-
-    - name: Install K3s via the K3s installer script
-      shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--write-kubeconfig-mode 644" sh -
-
     - name: Ensure K3s is running
       shell: |
         systemctl status k3s
