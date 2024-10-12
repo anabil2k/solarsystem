@@ -4,9 +4,9 @@
   tasks:      
     - name: deploy the dockerized app to production environment
       shell: |
-        kubectl apply -f kubernetes/namespace.yaml
-        kubectl apply -f kubernetes/deployment.yaml
-        kubectl apply -f kubernetes/service.yaml
+        kubectl apply -f ./kubernetes/namespace.yaml
+        kubectl apply -f ./kubernetes/deployment.yaml
+        kubectl apply -f ./kubernetes/service.yaml
 
     - name: check all kubernetes resources in the prod-ns namespace
       shell: kubectl get all -n pord-ns
