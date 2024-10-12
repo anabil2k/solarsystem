@@ -362,11 +362,17 @@ resource "aws_security_group" "k3s_sec_group" {
 
   ingress {
     protocol    = "tcp"
-    from_port   = 3000  # Grafana
+    from_port   = 3000  # testing
     to_port     = 3000
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    protocol    = "tcp"
+    from_port   = 3001  # staging env
+    to_port     = 3001
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   ingress {
     protocol    = "tcp"

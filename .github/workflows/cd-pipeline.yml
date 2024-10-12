@@ -299,6 +299,24 @@ jobs:
 #          inventory: ./ansible/inventory.ini
 #          playbook: ./ansible/install-config-monitoring.yml
 
+      # Run Ansible playbook to install and configure kubernetes
+      - name: Run Ansible playbook to install and configure kubernetes
+#        working-directory: ./ansible/
+        run: |
+          ansible-playbook  -i ./ansible/inventory.ini ./ansible/playbook_k3s.yml
+
+      # Run Ansible playbook to deploy a dockerized app to staging environment on kubernetes 
+      - name: Run Ansible playbook to deploy a dockerized app to staging environment on kubernetes
+#        working-directory: ./ansible/
+        run: |
+          ansible-playbook  -i ./ansible/inventory.ini ./ansible/deploy-app-to-staging-k3s.yml
+
+      # Run Ansible playbook to deploy a dockerized app to Production environment on kubernetes
+      - name: Run Ansible playbook to deploy a dockerized app to Production environment on kubernetes
+#        working-directory: ./ansible/
+        run: |
+          ansible-playbook  -i ./ansible/inventory.ini ./ansible/deploy-app-to-production-k3s.yml
+
       # Run Ansible playbook to publish website
       - name: Run Ansible Playbook
 #        working-directory: ./ansible/
@@ -306,11 +324,6 @@ jobs:
           chmod 644 index.html
           ansible-playbook  -i ./ansible/inventory.ini ./ansible/publish-web.yml
 
-      # Run Ansible playbook to publish website
-      - name: Run Ansible Playbook
-#        working-directory: ./ansible/
-        run: |
-          ansible-playbook  -i ./ansible/inventory.ini ./ansible/playbook_k3s.yml
 
 
       # Run Ansible playbook to publish website

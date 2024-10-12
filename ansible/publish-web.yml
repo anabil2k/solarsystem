@@ -3,10 +3,12 @@
 
 - name: Copy files to WebServer
   hosts: webserver
+  become: yes
+  gather_facts: true
   tasks:
     - name: Transfer files to webserver
       copy:
-        src: index.html
+        src: ./index.html
         dest: /var/www/html/
 
 #- name: Copy files to PrometheusServer
