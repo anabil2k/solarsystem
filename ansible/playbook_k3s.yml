@@ -20,7 +20,7 @@
     - name: Retrieve K3s kubeconfig
       shell: cat /etc/rancher/k3s/k3s.yaml
       register: k3s_kubeconfig
-      
+
 
     - name: Create .kube directory
       file:
@@ -33,3 +33,4 @@
         module: copy
         content: "{{ k3s_kubeconfig.stdout }}"
         dest: ~/.kube/config
+        mode: '0644'
