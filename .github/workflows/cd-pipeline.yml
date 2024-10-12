@@ -305,6 +305,12 @@ jobs:
         run: |
           ansible-playbook  -i ./ansible/inventory.ini ./ansible/playbook_k3s.yml
 
+      # kubectl-access 
+      - name: kubectl-access
+#        working-directory: ./ansible/
+        run: |
+          ansible-playbook  -i ./ansible/inventory.ini ./ansible/kubectl-access.yml
+
       # Run Ansible playbook to deploy a dockerized app to staging environment on kubernetes 
       - name: Run Ansible playbook to deploy a dockerized app to staging environment on kubernetes
 #        working-directory: ./ansible/
