@@ -1,15 +1,23 @@
 ---
-
-
-- name: Copy files to WebServer
-  hosts: webserver
+- hosts: webserver
   become: yes
   gather_facts: true
   tasks:
-    - name: Transfer files to webserver
-      copy:
-        src: ./index.html
-        dest: /var/www/html/
+    - name: Transfer website from the runner to the webserver EC2
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '0644'
+      loop:
+        - { src: "./index.html", dest: "/var/www/html/index.html" }
+#        - { src: "./kubernetes/service.yaml", dest: "/home/ubuntu/service.yaml" }
+#        - { src: "./kubernetes/namespace.yaml", dest: "/home/ubuntu/namespace.yaml" }
+
+
+#    - name: Transfer files to webserver
+#      copy:
+#        src: ./index.html
+#        dest: /var/www/html/
 
 #- name: Copy files to PrometheusServer
 #  hosts: prometheus

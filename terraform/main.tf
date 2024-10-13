@@ -165,6 +165,8 @@ resource "aws_instance" "fe_ec2" {
     sudo apt-get install apache2 -y
     sudo systemctl start apache2.service
     cd /var/www/html
+    sudo rm index.html
+    sudo ufw allow 80/tcp
     #echo "it works! Depi, MCIT" > index.html
   EOF
 
@@ -344,6 +346,9 @@ resource "aws_instance" "k3s_ec2" {
     sudo ufw allow 8472/udp
     sudo ufw allow 10250/tcp
     sudo ufw allow 10255/tcp
+    sudo ufw allow 3000/tcp
+    sudo ufw allow 3001/tcp
+    sudo ufw allow 80/tcp
   EOF
   root_block_device {
     volume_size = 20

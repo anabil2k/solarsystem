@@ -269,7 +269,7 @@ jobs:
 
 
       # Update Ansible inventory to use the newly generated SSH key
-      - name: Update Ansible Inventory with Elastic IPs and SSH key
+      - name: Update Ansible Inventory file with Elastic IPs and SSH key
         working-directory: ./ansible
         run: |
           pwd
@@ -303,6 +303,8 @@ jobs:
 #        working-directory: ./ansible/
         run: |
           ansible-playbook  -i ./ansible/inventory.ini ./ansible/playbook_k3s.yml
+          kubectl get all -n staging-ns
+
 
 
       # Run Ansible playbook to deploy a dockerized app to staging environment on kubernetes 
@@ -316,13 +318,13 @@ jobs:
 #        working-directory: ./ansible/
         run: |
           ansible-playbook  -i ./ansible/inventory.ini ./ansible/deploy-app-to-production-k3s.yml
-
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n pord-ns"
       # Run Ansible playbook to publish website
       # kubectl-access 
-      - name: kubectl-access
+#      - name: kubectl-access
 #        working-directory: ./ansible/
-        run: |
-          ansible-playbook  -i ./ansible/inventory.ini ./ansible/kubectl-access.yml
+#        run: |
+#          ansible-playbook  -i ./ansible/inventory.ini ./ansible/kubectl-access.yml
 
       - name: Run Ansible Playbook
 #        working-directory: ./ansible/
