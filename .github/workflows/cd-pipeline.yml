@@ -298,7 +298,6 @@ jobs:
 #        with:
 #          inventory: ./ansible/inventory.ini
 #          playbook: ./ansible/install-config-monitoring.yml
-
       # Run Ansible playbook to install and configure kubernetes
       - name: Run Ansible playbook to install and configure kubernetes
 #        working-directory: ./ansible/
