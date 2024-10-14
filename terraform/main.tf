@@ -349,6 +349,7 @@ resource "aws_instance" "k3s_ec2" {
     sudo ufw allow 3000/tcp
     sudo ufw allow 3001/tcp
     sudo ufw allow 80/tcp
+    sudo ufw allow 8080/tcp
   EOF
   root_block_device {
     volume_size = 20
@@ -376,6 +377,11 @@ resource "aws_security_group" "k3s_sec_group" {
     to_port     = 80
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    protocol    = "tcp"
+    from_port   = 8080
+    to_port     = 8080
+    cidr_blocks = ["0.0.0.0/0"]
 
   ingress {
     protocol    = "tcp"

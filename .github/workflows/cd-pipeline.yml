@@ -301,9 +301,8 @@ jobs:
       # Run Ansible playbook to install and configure kubernetes
       - name: Run Ansible playbook to install and configure kubernetes
 #        working-directory: ./ansible/
-        run: |
-          ansible-playbook  -i ./ansible/inventory.ini ./ansible/playbook_k3s.yml
-          kubectl get all -n staging-ns
+        run: ansible-playbook  -i ./ansible/inventory.ini ./ansible/playbook_k3s.yml
+
 
 
 
@@ -312,23 +311,31 @@ jobs:
 #        working-directory: ./ansible/
         run: |
           ansible-playbook  -i ./ansible/inventory.ini ./ansible/deploy-app-to-staging-k3s.yml
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n staging-ns"
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1:3001"
+          
       # Run Ansible playbook to deploy a dockerized app to Production environment on kubernetes
       - name: Run Ansible playbook to deploy a dockerized app to Production environment on kubernetes
 #        working-directory: ./ansible/
         run: |
           ansible-playbook  -i ./ansible/inventory.ini ./ansible/deploy-app-to-production-k3s.yml
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n pord-ns"
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1"
+          
       # Run Ansible playbook to publish website
       # kubectl-access 
 #      - name: kubectl-access
 #        working-directory: ./ansible/
 #        run: |
 #          ansible-playbook  -i ./ansible/inventory.ini ./ansible/kubectl-access.yml
+      - name: check kubernetes cluster
+#        working-directory: ./ansible/
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "sudo chmod 644 /etc/rancher/k3s/k3s.yaml && export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n staging-ns"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n staging-ns"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1:3001"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n pord-ns"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1"
+          
 
-      - name: Run Ansible Playbook
+      - name: Run Ansible Playbook to publish a website
 #        working-directory: ./ansible/
         run: |
           chmod 644 index.html
@@ -344,7 +351,7 @@ jobs:
 #        working-directory: ./ansible/
         run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:3000
 
-      - name:  check grafana 
+      - name:  check website
         #        working-directory: ./ansible/
         run: curl ${{ env.WEB_ELASTIC_IP }}
 
