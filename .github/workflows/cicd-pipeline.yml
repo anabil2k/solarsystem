@@ -314,8 +314,8 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n pord-ns"
           
-      - name: Sleeping for 7 Minutes
-        run: sleep 420s
+      - name: Sleeping for 10 Minutes
+        run: sleep 600s
         shell: bash
 
       - name:  check promethus
