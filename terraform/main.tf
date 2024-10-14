@@ -382,7 +382,7 @@ resource "aws_security_group" "k3s_sec_group" {
     from_port   = 8080
     to_port     = 8080
     cidr_blocks = ["0.0.0.0/0"]
-
+  }
   ingress {
     protocol    = "tcp"
     from_port   = 3000  # testing
