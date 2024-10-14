@@ -1,4 +1,4 @@
-name: CI Workflow
+name: solar system workflow
 on:
   workflow_dispatch:
   push:
