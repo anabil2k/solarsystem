@@ -1,11 +1,9 @@
-name: Provision EC2 and Deploy with Ansible
-
+name: CD Workflow
 on:
-    workflow_dispatch:
-    push:
-        branches:
-            - main
-            - 'feature/*'
+  workflow_run:
+    workflows: ["CI Workflow"]
+    types:
+      - completed
 
 jobs:
   provision-infrastructure:
@@ -32,9 +30,6 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
            terraform_wrapper: false
-#          terraform_version: 1.1.9
-
-
 
       - name: "Configure AWS Credentials" 
         uses: aws-actions/configure-aws-credentials@v4.0.2
@@ -42,11 +37,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-
-      # Generate a temporary SSH key to access EC2 instances initially
-      #- name: Generate Temporary SSH Key
-      #  run: ssh-keygen -t rsa -b 4096 -f ~/.ssh/temp_id_rsa -N ""
-      #  run: ssh-keygen -t rsa -b 2048 -f ~/.ssh/temp_id_rsa -N ""
       
       # Initialize Terraform
       - name: Terraform Init
@@ -88,23 +78,9 @@ jobs:
           echo "#################################"
           echo "ec2_private_key_base64=$(terraform output -raw ec2_private_key_base64)" >> $GITHUB_OUTPUT
           echo "ec2_private_key_base64=$(terraform output -raw ec2_private_key_base64)" >> $GITHUB_ENV
-          
-#          echo "ec2_private_key_pem<<EOF" >> $GITHUB_OUTPUT
-#          echo "$ec2_private_key_pem" >> $GITHUB_OUTPUT
-#          echo "EOF" >> $GITHUB_OUTPUT
-#          echo "#################################"
-#          echo "ec2_private_key_pem<<EOF" >> $GITHUB_ENV
-#          echo "$ec2_private_key_pem" >> $GITHUB_ENV
-#          echo "EOF" >> $GITHUB_ENV
-#          echo "ec2_private_key_pem=$(terraform output -raw ec2_private_key_pem)" >> $GITHUB_OUTPUT
-#          echo "ec2_private_key_pem=$(terraform output -raw ec2_private_key_pem)"
-#          echo "ec2_private_key_pem=$(terraform output -raw ec2_private_key_pem)"
 
           
-#          terraform output -raw monitoring_server_eip
-
-          
-      # Save the Elastic IPs as artifacts to use them in the next job
+      # Displaying Elastic IPs
       - name: Displaying Elastic IPs
         run: |
           echo "################## Public IPs ########################"
@@ -115,34 +91,6 @@ jobs:
           echo "WEB_SERVER_PRIVATE_IP: ${{ env.webserver_pip }}"
           echo "PROMETHEUS_PRIVATE_IP: ${{ env.monitoring_server_pip }}"
           echo "k3s_PRIVATE_IP: ${{ env.k3s_server_pip }}"
-##          echo "################## ec2_private_key_pem ########################"
-##           echo "ec2_private_key_base64: ${{ env.ec2_private_key_base64 }}"
-          
-#      - name: Output instance details
-#        id: ec2
-#        run: |
-#nwh            echo "WEB SERVER Private IP: $(terraform output -raw webserver_pip)"
-#nwh           echo "PROMETHEUS_Private_IP: $(terraform output -raw monitoring_server_pip)"
-#          echo "webserver_eip=$(terraform output -json webserver_eip | jq -r .)" >> $GITHUB_ENV
-#          echo "monitoring_server_eip=$(terraform output -json monitoring_server_eip | jq -r .)" >> $GITHUB_ENV
-
-
- #         echo "WEB_ELASTIC_IP=$(terraform output -json webserver_eip | jq -r .)" >> $GITHUB_ENV
- #         echo "PROMETHEUS_ELASTIC_IP=$(terraform output -json monitoring_server_eip | jq -r .)" >> $GITHUB_ENV
- #         echo "WEB SERVER ELASTIC IP: ${{ env.WEB_ELASTIC_IP }}"
- #         echo "PROMETHEUS_ELASTIC_IP: ${{ env.PROMETHEUS_ELASTIC_IP }}"
-       # Extract and store the Terraform private key as an artifact for Ansible
-
-##      - name: test displaying the tf output in later steps without env using steps.apply.outputs.ec2_private_key_base64
-##        run: |
-##          echo "${{ steps.apply.outputs.ec2_private_key_base64 }}" 
-#          echo "#### test inserting GITHUB_ENV value to file ###"
-#          echo "${{ env.ec2_private_key_pem }}" > ssh_key.pem
-#          chmod 600 ssh_key.pem
-#          echo "#### test to display GITHUB_OUT value ###"
-          
-          
-#        id: save_key
 
   ansible-config:
     name: Installation and Configuration using Ansible
@@ -154,21 +102,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Step 1: Create a new user 'ubuntu'
-#      - name: Create ubuntu user
-#        run: |
-#          sudo useradd -m ubuntu -s /bin/bash
-#          echo "ubuntu ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/ubuntu
-
-      # Step 2: Install Ansible and set permissions for the ubuntu user
-
-      # Step 2: Install Ansible using the ubuntu user
-#      - name: Install Ansible as ubuntu user
-#        run: |
-#         sudo -u ubuntu bash -c 'sudo apt update && sudo apt install -y ansible'
-
-      # Fetch the SSH private key artifact created in the previous step
-      # Step 3: Switch to ubuntu user and generate SSH key
+        # Step 3: Switch to ubuntu user and generate SSH key
       - name: Generate SSH Key
         run: |
             ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
@@ -176,50 +110,27 @@ jobs:
             chmod 600 ~/.ssh/id_rsa.pub
             ls -la ~/.ssh
             pwd
-    
-    #          sudo -u ubuntu ls -la ~/.ssh
-    #          sudo -u ubuntu ssh-keygen -t rsa -b 4096 -f /home/ubuntu/.ssh/id_rsa -N ""
-    #          sudo -u ubuntu ls -la /home/ubuntu/.ssh
-            # Store the generated public key in the workflow for later use
         id: generate_key
 
-#      - name: Download SSH Key
-# Decode the base64-encoded private key and store it in the SSH directory
+        # Decode the base64-encoded private key and store it in the SSH directory
       - name: Decode and save the private SSH key
         run: |
           echo "${{ needs.provision-infrastructure.outputs.ec2_private_key_base64 }}" | base64 --decode > ~/.ssh/ec2_private_key_pem
           chmod 600 ~/.ssh/ec2_private_key_pem
           ls -la ~/.ssh
-#           echo "#### test inserting JOB GITHUB_OUT to runner ###"
-#          echo '${{ needs.provision-infrastructure.outputs.ec2_private_key_pem }}' >> ~/.ssh/ec2_private_key_pem2
-#          chmod 600 ~/.ssh/ec2_private_key_pem2
-#          echo "#### test inserting "GITHUB_ENV from prev job  to runner ###"
-#          echo '${{ env.ec2_private_key_pem }}' >> ~/.ssh/ec2_private_key_pem3
-#          chmod 600 ~/.ssh/ec2_private_key_pem3
-#          ls -la ~/.ssh
-#          echo "#### test inserting "GITHUB_ENV to key file" to runner ###"
-#          cat ssh_key.pem > ~/.ssh/ec2_private_key_pem
-#          chmod 600 ~/.ssh/ec2_private_key_pem
 
-      # Step 2: Install Ansible using the ubuntu user
+      # Install Ansible
       - name: Install Ansible
         run: |
          sudo apt update && sudo apt install -y ansible
 
-      # step 3: install ansible galaxy collections as ubuntu user
+      # Install ansible galaxy collections as ubuntu user
       - name: install ansible galaxy collections
         run: |
           ansible-galaxy collection install prometheus.prometheus
           ansible-galaxy collection install grafana.grafana
-#          sudo -u ubuntu bash -c 'ansible-galaxy collection install prometheus.prometheus'
-#          sudo -u ubuntu bash -c 'ansible-galaxy collection install grafana.grafana'
 
-#        run: ansible-galaxy install -r ./ansible/requirements.yml
-
-
-
-
-      # Step 4: Save the SSH key as a secret or artifact for future jobs
+      # Save the SSH key as a secret or artifact for future jobs
       - name: Save Public SSH Key for further EC2s distribution
         run: |
           PUBLIC_KEY=$(sudo cat ~/.ssh/id_rsa.pub)
@@ -227,47 +138,13 @@ jobs:
           echo "WEB_ELASTIC_IP=${{needs.provision-infrastructure.outputs.webserver_eip}}" >> $GITHUB_ENV
           echo "PROMETHEUS_ELASTIC_IP=${{needs.provision-infrastructure.outputs.monitoring_server_eip}}" >> $GITHUB_ENV
           echo "k3s_ELASTIC_IP=${{needs.provision-infrastructure.outputs.k3s_server_eip}}" >> $GITHUB_ENV
-#          PUBLIC_KEY=$(sudo cat /home/ubuntu/.ssh/id_rsa.pub)
 
-#      - name: Distribute SSH Key to WebServer and Prometheus
-#        run: |
-#          sudo chmod 700 /home/ubuntu/.ssh
-#          sudo chmod 400 /home/ubuntu/.ssh/id_rsa
-#          sudo ls -la /home/ubuntu/.ssh
-      # Distribute the generated SSH key to the EC2 instances using temporary SSH key
-      # Use the ubuntu user created earlier to distribute the key to the EC2 instances
       - name: Distribute SSH Key to WebServer and Prometheus
-#        env:
-#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_PRIVATE_KEY }}
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
           ls -la ~/.ssh
-#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
-#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
-#          sudo -u ubuntu bash -c 'ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.WEB_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"'
-#          ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/id_rsa ubuntu@${{env.PROMETHEUS_ELASTIC_IP}} "mkdir -p ~/.ssh && echo '${{ env.SSH_PUBLIC_KEY }}' >> ~/.ssh/authorized_keys"
-#          chmod 600 /home/ubuntu/.ssh/id_rsa
-#          chmod 700 /home/ubuntu/.ssh
-#          sudo -u ubuntu chmod 644 /home/ubuntu/.ssh/authorized_keys          
-#          chmod 644 /home/ubuntu/.ssh/authorized_keys
-#          WEB_ELASTIC_IP= ${{ env.WEB_ELASTIC_IP }}
-#          PROMETHEUS_ELASTIC_IP= ${{ env.PROMETHEUS_ELASTIC_IP }}
-#          ssh ubuntu@${{env.WEB_ELASTIC_IP}}
-#          ls -la /home/ubuntu/.ssh
-
-#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ needs.provision-infrastructure.outputs.webserver_eip }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
-#          chmod 600 ~/.ssh/id_rsa
-#          chmod 600 ~/.ssh/id_rsa.pub
-#          ls -la ~/.ssh
-#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ needs.provision-infrastructure.outputs.monitoring_server_eip }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
-#          chmod 600 ~/.ssh/id_rsa
-#          chmod 600 ~/.ssh/id_rsa.pub
-#          ls -la ~/.ssh
-#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.WEB_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
-#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/temp_id_rsa ubuntu@${{ env.PROMETHEUS_ELASTIC_IP }} "mkdir -p ~/.ssh && echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
-
 
       # Update Ansible inventory to use the newly generated SSH key
       - name: Update Ansible Inventory file with Elastic IPs and SSH key
@@ -282,114 +159,62 @@ jobs:
           echo "[k3s]" >> inventory.ini
           echo "k3s_instance ansible_host=${{ env.k3s_ELASTIC_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> inventory.ini
           cat inventory.ini
+
       # check servers' connectivity
       - name: ping servers
         working-directory: ./ansible
         run: ansible all -i inventory.ini -m ping
         
       - name: Run Ansible Playbook to publish a website
-#        working-directory: ./ansible/
         run: |
           chmod 644 index.html
           ansible-playbook  -i ./ansible/inventory.ini ./ansible/publish-web.yml
 
       # Run Ansible playbook to install and configure monitoring 
       - name:  Run Ansible playbook to install and configure monitoring 
-#        working-directory: ./ansible/
         run: ansible-playbook  -i ./ansible/inventory.ini ./ansible/install-config-monitoring.yml
 
- 
-      # Run Ansible playbook to install and configure monitoring 
-#      - name: Run Ansible playbook to install and configure monitoring
-#        uses: dawidd6/action-ansible-playbook@v2
-#        with:
-#          inventory: ./ansible/inventory.ini
-#          playbook: ./ansible/install-config-monitoring.yml
       # Run Ansible playbook to install and configure kubernetes
       - name: Run Ansible playbook to install and configure kubernetes
-#        working-directory: ./ansible/
         run: ansible-playbook  -i ./ansible/inventory.ini ./ansible/playbook_k3s.yml
-
-
-
 
       # Run Ansible playbook to deploy a dockerized app to staging environment on kubernetes 
       - name: Run Ansible playbook to deploy a dockerized app to staging environment on kubernetes
-#        working-directory: ./ansible/
         run: |
           ansible-playbook  -i ./ansible/inventory.ini ./ansible/deploy-app-to-staging-k3s.yml
           
       # Run Ansible playbook to deploy a dockerized app to Production environment on kubernetes
       - name: Run Ansible playbook to deploy a dockerized app to Production environment on kubernetes
-#        working-directory: ./ansible/
         run: |
           ansible-playbook  -i ./ansible/inventory.ini ./ansible/deploy-app-to-production-k3s.yml
 
       - name: quick look to kubernetes cluster resources in the Staging namespace 
-#        working-directory: ./ansible/
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n staging-ns"
 
       - name: quick look to kubernetes cluster resources in the Production namespace 
-#        working-directory: ./ansible/
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n pord-ns"
-
-#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "sudo chmod 644 /etc/rancher/k3s/k3s.yaml && export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
-#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1:3001"
-#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1"         
-
           
       - name: Sleeping for 5 Minutes
         run: sleep 300s
         shell: bash
 
-#      - name: Sleeping for 5 Minutes
-#        uses: jakejarvis/wait-action@master
-#        with:
-#          time: '300s'    
-      # Run Ansible playbook to publish website
-      # kubectl-access 
-#      - name: kubectl-access
-#        working-directory: ./ansible/
-#        run: |
-#          ansible-playbook  -i ./ansible/inventory.ini ./ansible/kubectl-access.yml
-#  checking-phase:
-#    name: Checking Phase
-#    needs: ansible-config
-#    runs-on: ubuntu-latest
-
-#    steps:
-
       - name:  check promethus
-#        working-directory: ./ansible/
         run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:9090
      
       - name:  check grafana 
-#        working-directory: ./ansible/
         run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:3000
 
       - name:  check website
-        #        working-directory: ./ansible/
         run: curl ${{ env.WEB_ELASTIC_IP }}
 
   
       - name:  check  the app published to the Kubernetes Production Environment
-#        working-directory: ./ansible/
         run: curl ${{ env.k3s_ELASTIC_IP }}/live
 
       - name:  check the app published to the Kubernetes Staging Environment
-#        working-directory: ./ansible/
         run: curl ${{ env.k3s_ELASTIC_IP }}:3001/ready
-        
-
-
-      # Run Ansible playbook to publish website
-#      - name: Run Ansible Playbook
-#        uses: dawidd6/action-ansible-playbook@v2
-#        with:
-#          inventory: ./ansible/inventory.ini
-#          playbook: ./ansible/publish-web.yml
         
 
       

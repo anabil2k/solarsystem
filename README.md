@@ -1,49 +1,30 @@
-# Solar System NodeJS Application
 
-A simple HTML+MongoDB+NodeJS project to display Solar System and it's planets.
+# CI/CD Pipeline for Node.js Application
 
----
-## Requirements
+This project implements a comprehensive CI/CD pipeline for a Node.js application using GitHub Actions.
 
-For development, you will only need Node.js and NPM installed in your environement.
+## CI Pipeline
 
-### Node
-- #### Node installation on Windows
+The CI pipeline is triggered by a push to the `main` or `feature/*` branches. It performs the following steps:
+- **Unit Testing**: Runs tests across different Node.js versions (18, 19, 20) on Ubuntu and MacOS environments.
+- **Code Coverage**: Measures the test coverage of the codebase.
+- **Static Code Analysis**: Ensures code quality using linting tools.
 
-  Just go on [official Node.js website](https://nodejs.org/) and download the installer.
-Also, be sure to have `git` available in your PATH, `npm` might need it (You can find git [here](https://git-scm.com/)).
+## CD Pipeline
 
-- #### Node installation on Ubuntu
+The CD pipeline deploys the application to AWS using Kubernetes (K3s) and Ansible. It performs the following tasks:
+- **Provisioning EC2 Instances**: Terraform is used to set up infrastructure on AWS.
+- **Kubernetes Setup**: K3s is installed on EC2, and Dockerized applications are deployed to staging and production namespaces.
+- **Monitoring and Health Checks**: Includes Prometheus, Grafana, and checks for app availability.
 
-  You can install nodejs and npm easily with apt install, just run the following commands.
+## How to Use
 
-      $ sudo apt install nodejs
-      $ sudo apt install npm
+1. Push code to `main` or `feature/*` branches to trigger the CI pipeline.
+2. CD pipeline automatically provisions and deploys to staging and production environments.
 
-- #### Other Operating Systems
-  You can find more information about the installation on the [official Node.js website](https://nodejs.org/) and the [official NPM website](https://npmjs.org/).
+## Authors
 
-If the installation was successful, you should be able to run the following command.
-
-    $ node --version
-    v8.11.3
-
-    $ npm --version
-    6.1.0
-
----
-## Install Dependencies from `package.json`
-    $ npm install
-
-## Run Unit Testing
-    $ npm test
-
-## Run Code Coverage
-    $ npm run coverage
-
-## Run Application
-    $ npm start
-
-## Access Application on Browser
-    http://localhost:3000/
-
+- Ahmed Nabil Mahmoud
+- Mohamed EL-Mahdy
+- Ahmed Hisham abd EL-Gawwad
+- Mohamed Alaa

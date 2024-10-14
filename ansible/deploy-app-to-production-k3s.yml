@@ -12,8 +12,7 @@
         - { src: "/home/runner/work/solarsystem/solarsystem/kubernetes/deployment.yaml", dest: "/home/ubuntu/deployment.yaml" }
         - { src: "/home/runner/work/solarsystem/solarsystem/kubernetes/service.yaml", dest: "/home/ubuntu/service.yaml" }
         - { src: "/home/runner/work/solarsystem/solarsystem/kubernetes/namespace.yaml", dest: "/home/ubuntu/namespace.yaml" }
-#        - { src: "./kubernetes/deployment.yaml", dest: "/home/ubuntu/deployment.yaml" }
-        # Add other YAML files as needed
+
 
     - name: Apply Kubernetes service YAML
       command: kubectl apply -f /home/ubuntu/namespace.yaml
@@ -23,12 +22,3 @@
 
     - name: Apply Kubernetes service YAML
       command: kubectl apply -f /home/ubuntu/service.yaml
-
-#    - name: deploy the dockerized app to production environment
-#      shell: |
-#        kubectl apply -f ./kubernetes/namespace.yaml
-#        kubectl apply -f ./kubernetes/deployment.yaml
-#        kubectl apply -f ./kubernetes/service.yaml
-
-#    - name: check all kubernetes resources in the prod-ns namespace
-#      shell: kubectl get all -n pord-ns

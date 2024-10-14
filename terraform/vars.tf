@@ -39,26 +39,13 @@ variable "public_subnet_1_cidr" {
   default   = "10.0.0.0/24"
 }
 
-/*
-variable "public_subnet_2_cidr" {
-  description = "The CIDR block for the public subnet in the second Availability Zone"
-  type        = string
-  default   = "10.0.1.0/24"
-}
-*/
 variable "private_subnet_1_cidr" {
   description = "The CIDR block for the private subnet in the first Availability Zone"
   type        = string
   default   = "10.0.2.0/24"
   
 }
-/*
-variable "private_subnet_2_cidr" {
-  description = "The CIDR block for the private subnet in the second Availability Zone"
-  type        = string
-  default   = "10.0.3.0/24"
-}
-*/
+
 variable "ec2_ami" {
   description = "ec2 ami"
   type        = string
@@ -72,10 +59,3 @@ variable "ec2_type" {
   default = "t2.micro"
   
 }
-
-
-/*
-variable "public_key" {
-  type = string
-}
-*/

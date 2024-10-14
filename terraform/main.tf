@@ -6,30 +6,7 @@ provider "aws" {
   secret_key = var.aws_secret_access_key
 }
 data "aws_availability_zones" "available" {}
-/*
-# Backend infrastructure for Terraform state management
-resource "aws_s3_bucket" "terraform_state_bucket" {
-  bucket = "my-depi-anmz-terraform-state-bucket"  # Choose a globally unique name
-  
-}
-resource "aws_s3_bucket_acl" "acl_type" {
-  bucket = aws_s3_bucket.terraform_state_bucket.id
-  acl    = "private"
 
-}
-
-# DynamoDB table for state locking and consistency
-resource "aws_dynamodb_table" "terraform_locks" {
-  name         = "terraform-locks"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "LockID"
-
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-}
-*/
 # Backend configuration to store state in S3 and use DynamoDB for locking
 terraform {
   backend "s3" {
@@ -85,26 +62,6 @@ resource "aws_subnet" "private_subnet_1" {
   }
 }
 
-/*
-# Eip for NAT Gateway
-resource "aws_eip" "nat_gateway_1_eip" {
-  domain = "vpc"
-  #vpc = true
-}
-
-
-
-# NAT Gateways
-
-resource "aws_nat_gateway" "nat_gateway_1" {
-  allocation_id = aws_eip.nat_gateway_1_eip.id
-  subnet_id     = aws_subnet.public_subnet_1.id
-  tags = {
-    Name = "${var.environment_name} NatGW AZ1"
-  }
-}
-
-*/
 
 # Route Tables
 resource "aws_route_table" "public_route_table" {
@@ -128,12 +85,7 @@ resource "aws_route_table_association" "public_subnet_1_association" {
 
 resource "aws_route_table" "private_route_table_1" {
   vpc_id = aws_vpc.main_vpc.id
-/*
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gateway_1.id
-  }
-*/
+
   tags = {
     Name = "${var.environment_name} Private Routes (AZ1)"
   }
@@ -148,14 +100,12 @@ resource "aws_route_table_association" "private_subnet_1_association" {
 resource "aws_eip" "webserver_eip" {
   instance = aws_instance.fe_ec2.id
   domain = "vpc"
-  #vpc = true
 }
 resource "aws_instance" "fe_ec2" {
   ami           = var.ec2_ami
   instance_type = var.ec2_type
   subnet_id = aws_subnet.public_subnet_1.id
-  #security_groups = [aws_security_group.web_sec_group.name]
-  key_name      = "ec2_key_pair"  # Name of the temporary key
+  key_name      = "ec2_key_pair"
   vpc_security_group_ids = [aws_security_group.web_sec_group.id]
   
   
@@ -265,29 +215,9 @@ resource "aws_instance" "monitoring_server" {
   ami           = var.ec2_ami
   instance_type = var.ec2_type
   subnet_id = aws_subnet.public_subnet_1.id
-  key_name      = "ec2_key_pair"  # Name of the temporary key #name of the keypair on aws
-  
-
-  #security_groups = [aws_security_group.monitoring_sec_group.name]
+  key_name      = "ec2_key_pair"  
   vpc_security_group_ids = [aws_security_group.monitoring_sec_group.id]
-  #security_groups = [aws_security_group.monitoring_sec_group.name]
   
-/*
-  user_data = <<-EOF
-    #!/bin/bash
-    # Update and install necessary packages
-    sudo apt-get update -y
-    sudo apt-get install -y prometheus grafana
-    
-    # Start Prometheus service
-    sudo systemctl start prometheus
-    sudo systemctl enable prometheus
-
-    # Start Grafana service
-    sudo systemctl start grafana-server
-    sudo systemctl enable grafana-server
-  EOF
-*/
   root_block_device {
     volume_size = 20
   }
@@ -317,8 +247,6 @@ resource "aws_key_pair" "ec2_key_pair" {
   key_name   = "ec2_key_pair"
   public_key = tls_private_key.rsa-4096-pem.public_key_openssh
 
-
-  #public_key = var.public_key  # Use the public key from GitHub Actions
 }
 
 

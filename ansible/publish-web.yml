@@ -18,29 +18,4 @@
         dest: "/var/www/html/images"
         mode: push
         recursive: yes
-        delete: no  # Prevents deletion of files on the destination
-
-#    - name: Transfer images folder from the runner to the webserver EC2
-#      ansible.builtin.copy:
-#        src: "/home/runner/work/solarsystem/solarsystem/images"
-#        dest: "/var/www/html/images"
-#        mode: '0755'
-#        recursive: yes  
-
-        
-#        - { src: "./kubernetes/service.yaml", dest: "/home/ubuntu/service.yaml" }
-#        - { src: "./kubernetes/namespace.yaml", dest: "/home/ubuntu/namespace.yaml" }
-
-
-#    - name: Transfer files to webserver
-#      copy:
-#        src: ./index.html
-#        dest: /var/www/html/
-
-#- name: Copy files to PrometheusServer
-#  hosts: prometheus
-#  tasks:
-#    - name: Transfer Prometheus config
-#      copy:
-#        src: /path/to/prometheus/config
-#        dest: /etc/prometheus/
+        delete: no
