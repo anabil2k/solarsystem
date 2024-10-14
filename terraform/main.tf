@@ -331,7 +331,7 @@ resource "local_file" "ec2_key_pair_private_key_pem" {
 # provisioning k3s ec2
 resource "aws_instance" "k3s_ec2" {
   ami           = var.ec2_ami
-  instance_type = var.ec2_type
+  instance_type = "t2.small"
   subnet_id = aws_subnet.public_subnet_1.id
   key_name      = "ec2_key_pair"
   vpc_security_group_ids = [aws_security_group.k3s_sec_group.id]
@@ -352,7 +352,7 @@ resource "aws_instance" "k3s_ec2" {
     sudo ufw allow 8080/tcp
   EOF
   root_block_device {
-    volume_size = 20
+    volume_size = 30
   }
 
   tags = {
