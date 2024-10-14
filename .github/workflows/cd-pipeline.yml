@@ -330,31 +330,12 @@ jobs:
 #        working-directory: ./ansible/
 #        run: |
 #          ansible-playbook  -i ./ansible/inventory.ini ./ansible/kubectl-access.yml
-      - name: check kubernetes cluster
-#        working-directory: ./ansible/
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n staging-ns"
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n staging-ns"
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1:3001"
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n pord-ns"
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1"
-#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "sudo chmod 644 /etc/rancher/k3s/k3s.yaml && export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
 
-          
-
-      - name:  check Kubernetes Production Environment
-#        working-directory: ./ansible/
-        run: curl ${{ env.k3s_ELASTIC_IP }}
-
-      - name:  check Kubernetes Staging Environment
-#        working-directory: ./ansible/
-        run: curl ${{ env.k3s_ELASTIC_IP }}:3001
 
       - name:  check promethus
 #        working-directory: ./ansible/
         run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:9090
-
-      
+     
       - name:  check grafana 
 #        working-directory: ./ansible/
         run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:3000
@@ -363,7 +344,27 @@ jobs:
         #        working-directory: ./ansible/
         run: curl ${{ env.WEB_ELASTIC_IP }}
 
+      - name: check kubernetes cluster Staging namespace resources
+#        working-directory: ./ansible/
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n staging-ns"
 
+      - name: check kubernetes cluster Production namespace resources
+#        working-directory: ./ansible/
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n pord-ns"
+
+#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "sudo chmod 644 /etc/rancher/k3s/k3s.yaml && export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
+#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1:3001"
+#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1"         
+
+      - name:  check Kubernetes Production Environment
+#        working-directory: ./ansible/
+        run: curl ${{ env.k3s_ELASTIC_IP }}
+
+      - name:  check Kubernetes Staging Environment
+#        working-directory: ./ansible/
+        run: curl ${{ env.k3s_ELASTIC_IP }}:3001
         
 
 
