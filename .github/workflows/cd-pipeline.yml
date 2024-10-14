@@ -285,6 +285,12 @@ jobs:
       - name: ping servers
         working-directory: ./ansible
         run: ansible all -i inventory.ini -m ping
+        
+      - name: Run Ansible Playbook to publish a website
+#        working-directory: ./ansible/
+        run: |
+          chmod 644 index.html
+          ansible-playbook  -i ./ansible/inventory.ini ./ansible/publish-web.yml
 
       # Run Ansible playbook to install and configure monitoring 
       - name:  Run Ansible playbook to install and configure monitoring 
@@ -327,19 +333,13 @@ jobs:
       - name: check kubernetes cluster
 #        working-directory: ./ansible/
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "sudo chmod 644 /etc/rancher/k3s/k3s.yaml && export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n staging-ns"
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n staging-ns"
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1:3001"
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n pord-ns"
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1"
-          
+#          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "sudo chmod 644 /etc/rancher/k3s/k3s.yaml && export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
 
-      - name: Run Ansible Playbook to publish a website
-#        working-directory: ./ansible/
-        run: |
-          chmod 644 index.html
-          ansible-playbook  -i ./ansible/inventory.ini ./ansible/publish-web.yml
           
 
       - name:  check promethus

@@ -9,9 +9,10 @@
         dest: "{{ item.dest }}"
         mode: '0644'
       loop:
-        - { src: "./kubernetes/deployment.yaml", dest: "/home/ubuntu/deployment.yaml" }
-        - { src: "./kubernetes/service.yaml", dest: "/home/ubuntu/service.yaml" }
-        - { src: "./kubernetes/namespace.yaml", dest: "/home/ubuntu/namespace.yaml" }
+        - { src: "deployment.yaml", dest: "/home/ubuntu/deployment.yaml" }
+        - { src: "service.yaml", dest: "/home/ubuntu/service.yaml" }
+        - { src: "namespace.yaml", dest: "/home/ubuntu/namespace.yaml" }
+#        - { src: "./kubernetes/deployment.yaml", dest: "/home/ubuntu/deployment.yaml" }
         # Add other YAML files as needed
 
     - name: Apply Kubernetes service YAML
