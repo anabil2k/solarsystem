@@ -1,10 +1,14 @@
 name: CD Workflow
+#on:
+#  workflow_run:
+#    workflows: ["CI Workflow"]
+#    types:
+#      - completed
 on:
-  workflow_run:
-    workflows: ["CI Workflow"]
-    types:
-      - completed
-
+  push:
+      branches:
+          - main
+          - 'feature/*'
 jobs:
   provision-infrastructure:
     name: Provision Network and EC2 Instances using Terraform
