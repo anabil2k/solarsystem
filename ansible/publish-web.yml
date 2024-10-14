@@ -9,7 +9,7 @@
         dest: "{{ item.dest }}"
         mode: '0644'
       loop:
-        - { src: "./index.html", dest: "/var/www/html/index.html" }
+        - { src: "/home/runner/work/solarsystem/solarsystem/index.html", dest: "/var/www/html/index.html" }
 #        - { src: "./kubernetes/service.yaml", dest: "/home/ubuntu/service.yaml" }
 #        - { src: "./kubernetes/namespace.yaml", dest: "/home/ubuntu/namespace.yaml" }
 
