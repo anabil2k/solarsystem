@@ -105,7 +105,7 @@ jobs:
 
           
       # Save the Elastic IPs as artifacts to use them in the next job
-      - name: Save Elastic IPs
+      - name: Displaying Elastic IPs
         run: |
           echo "################## Public IPs ########################"
           echo "WEB_SERVER_ELASTIC_IP: ${{ env.webserver_eip }}"
@@ -115,8 +115,8 @@ jobs:
           echo "WEB_SERVER_PRIVATE_IP: ${{ env.webserver_pip }}"
           echo "PROMETHEUS_PRIVATE_IP: ${{ env.monitoring_server_pip }}"
           echo "k3s_PRIVATE_IP: ${{ env.k3s_server_pip }}"
-          echo "################## ec2_private_key_pem ########################"
-          echo "ec2_private_key_base64: ${{ env.ec2_private_key_base64 }}"
+##          echo "################## ec2_private_key_pem ########################"
+##           echo "ec2_private_key_base64: ${{ env.ec2_private_key_base64 }}"
           
 #      - name: Output instance details
 #        id: ec2
@@ -132,9 +132,10 @@ jobs:
  #         echo "WEB SERVER ELASTIC IP: ${{ env.WEB_ELASTIC_IP }}"
  #         echo "PROMETHEUS_ELASTIC_IP: ${{ env.PROMETHEUS_ELASTIC_IP }}"
        # Extract and store the Terraform private key as an artifact for Ansible
-      - name: test displaying the tf output in later steps without env using steps.apply.outputs.ec2_private_key_base64
-        run: |
-          echo "${{ steps.apply.outputs.ec2_private_key_base64 }}" 
+
+##      - name: test displaying the tf output in later steps without env using steps.apply.outputs.ec2_private_key_base64
+##        run: |
+##          echo "${{ steps.apply.outputs.ec2_private_key_base64 }}" 
 #          echo "#### test inserting GITHUB_ENV value to file ###"
 #          echo "${{ env.ec2_private_key_pem }}" > ssh_key.pem
 #          chmod 600 ssh_key.pem
@@ -143,8 +144,8 @@ jobs:
           
 #        id: save_key
 
-  ansible-deploy:
-    name: Install and Deploy Configuration using Ansible
+  ansible-config:
+    name: Installation and Configuration using Ansible
     runs-on: ubuntu-latest
     needs: provision-infrastructure
 
@@ -323,22 +324,31 @@ jobs:
 #        working-directory: ./ansible/
         run: |
           ansible-playbook  -i ./ansible/inventory.ini ./ansible/deploy-app-to-production-k3s.yml
-          
+
+      - name: Sleep for 3 Minutes
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '300s'    
       # Run Ansible playbook to publish website
       # kubectl-access 
 #      - name: kubectl-access
 #        working-directory: ./ansible/
 #        run: |
 #          ansible-playbook  -i ./ansible/inventory.ini ./ansible/kubectl-access.yml
+#  checking-phase:
+#    name: Checking Phase
+#    needs: ansible-config
+#    runs-on: ubuntu-latest
 
+#    steps:
 
       - name:  check promethus
 #        working-directory: ./ansible/
-        run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:9090
+        run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:9090/ready
      
       - name:  check grafana 
 #        working-directory: ./ansible/
-        run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:3000
+        run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:3000/ready
 
       - name:  check website
         #        working-directory: ./ansible/
@@ -360,11 +370,11 @@ jobs:
 
       - name:  check Kubernetes Production Environment
 #        working-directory: ./ansible/
-        run: curl ${{ env.k3s_ELASTIC_IP }}
+        run: curl ${{ env.k3s_ELASTIC_IP }}/live
 
       - name:  check Kubernetes Staging Environment
 #        working-directory: ./ansible/
-        run: curl ${{ env.k3s_ELASTIC_IP }}:3001
+        run: curl ${{ env.k3s_ELASTIC_IP }}:3001/live
         
 
 
