@@ -3,13 +3,24 @@
   become: yes
   gather_facts: true
   tasks:
-    - name: Transfer website from the runner to the webserver EC2
+    - name: Transfer website main files from the runner to the webserver EC2
       ansible.builtin.copy:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         mode: '0644'
       loop:
         - { src: "/home/runner/work/solarsystem/solarsystem/index.html", dest: "/var/www/html/index.html" }
+        - { src: "/home/runner/work/solarsystem/solarsystem/app-controller.js", dest: "/var/www/html/app-controller.js" }
+
+
+    - name: Transfer images folder from the runner to the webserver EC2
+      ansible.builtin.copy:
+        src: "/home/runner/work/solarsystem/solarsystem/images"
+        dest: "/var/www/html/images"
+        mode: '0755'
+        recursive: yes  
+
+        
 #        - { src: "./kubernetes/service.yaml", dest: "/home/ubuntu/service.yaml" }
 #        - { src: "./kubernetes/namespace.yaml", dest: "/home/ubuntu/namespace.yaml" }
 

@@ -342,6 +342,14 @@ jobs:
 
           
 
+      - name:  check Kubernetes Production Environment
+#        working-directory: ./ansible/
+        run: curl ${{ env.k3s_ELASTIC_IP }}
+
+      - name:  check Kubernetes Staging Environment
+#        working-directory: ./ansible/
+        run: curl ${{ env.k3s_ELASTIC_IP }}:3001
+
       - name:  check promethus
 #        working-directory: ./ansible/
         run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:9090
