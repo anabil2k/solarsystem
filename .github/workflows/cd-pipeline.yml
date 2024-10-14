@@ -291,15 +291,7 @@ jobs:
 #        working-directory: ./ansible/
         run: ansible-playbook  -i ./ansible/inventory.ini ./ansible/install-config-monitoring.yml
 
-      - name:  check promethus
-#        working-directory: ./ansible/
-        run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:9090
-
-      
-      - name:  check grafana 
-#        working-directory: ./ansible/
-        run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:3000
-
+ 
       # Run Ansible playbook to install and configure monitoring 
 #      - name: Run Ansible playbook to install and configure monitoring
 #        uses: dawidd6/action-ansible-playbook@v2
@@ -328,7 +320,7 @@ jobs:
         run: |
           ansible-playbook  -i ./ansible/inventory.ini ./ansible/deploy-app-to-production-k3s.yml
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "kubectl get all -n pord-ns"
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1:3000"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_private_key_pem ubuntu@${{ env.k3s_ELASTIC_IP }} "curl 127.0.0.1"
       # Run Ansible playbook to publish website
       # kubectl-access 
 #      - name: kubectl-access
@@ -341,8 +333,23 @@ jobs:
         run: |
           chmod 644 index.html
           ansible-playbook  -i ./ansible/inventory.ini ./ansible/publish-web.yml
-          curl ${{ env.WEB_ELASTIC_IP }}
+          
 
+      - name:  check promethus
+#        working-directory: ./ansible/
+        run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:9090
+
+      
+      - name:  check grafana 
+#        working-directory: ./ansible/
+        run: curl ${{ env.PROMETHEUS_ELASTIC_IP }}:3000
+
+      - name:  check grafana 
+        #        working-directory: ./ansible/
+        run: curl ${{ env.WEB_ELASTIC_IP }}
+
+
+        
 
 
       # Run Ansible playbook to publish website
