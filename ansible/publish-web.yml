@@ -12,13 +12,20 @@
         - { src: "/home/runner/work/solarsystem/solarsystem/index.html", dest: "/var/www/html/index.html" }
         - { src: "/home/runner/work/solarsystem/solarsystem/app-controller.js", dest: "/var/www/html/app-controller.js" }
 
-
-    - name: Transfer images folder from the runner to the webserver EC2
-      ansible.builtin.copy:
+    - name: Transfer Kubernetes folder with YAML templates from the runner to EC2
+      ansible.builtin.synchronize:
         src: "/home/runner/work/solarsystem/solarsystem/images"
         dest: "/var/www/html/images"
-        mode: '0755'
-        recursive: yes  
+        mode: push
+        recursive: yes
+        delete: no  # Prevents deletion of files on the destination
+
+#    - name: Transfer images folder from the runner to the webserver EC2
+#      ansible.builtin.copy:
+#        src: "/home/runner/work/solarsystem/solarsystem/images"
+#        dest: "/var/www/html/images"
+#        mode: '0755'
+#        recursive: yes  
 
         
 #        - { src: "./kubernetes/service.yaml", dest: "/home/ubuntu/service.yaml" }
