@@ -9,6 +9,7 @@ on:
       branches:
           - main
           - 'feature/*'
+          
 jobs:
   provision-infrastructure:
     name: Provision Network and EC2 Instances using Terraform
