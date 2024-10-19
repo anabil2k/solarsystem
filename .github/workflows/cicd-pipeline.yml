@@ -11,11 +11,9 @@ env:
 jobs:
   # Cross-Platform Testing
   unit-testing:
-      name: Cross-Platform Testing
-#      name: unit testing
+      name: unit and Cross-Platform Testing
       strategy:
           matrix:
-#              nodejs_version: [18,19,20]
               nodejs_version: [18,20,21]
               os: [ubuntu-latest,macos-latest]
               exclude:
@@ -29,7 +27,6 @@ jobs:
 
           - name: ${{ matrix.nodejs_version }}
           #- name: setup Node Js Version 18
-#            uses: actions/setup-node@v3
             uses: actions/setup-node@v4
             with:
               #node-version: 18
@@ -46,7 +43,6 @@ jobs:
             if: failure() && (steps.nodejs-unit-testing-step.outcome == 'failure' || steps.nodejs-unit-testing-step.outcome == 'success' )
             #if: always()
             uses: actions/upload-artifact@v4
-#            uses: actions/upload-artifact@v3
             with:
               name: mocha-test-result
               path: test-results.xml
@@ -62,10 +58,8 @@ jobs:
 
           
           - name: setup Node Js Version 20
-#            uses: actions/setup-node@v3
             uses: actions/setup-node@v4
             with:
-#              node-version: 18
               node-version: 20
               
           - name: install depend.
@@ -79,8 +73,6 @@ jobs:
             run: npm test
 
           - name: Archive coverage result
-            
-#            uses: actions/upload-artifact@v3
             uses: actions/upload-artifact@v4
             with:
               name: code-coverage-result
@@ -150,7 +142,7 @@ jobs:
     steps:
       # Checkout the repository
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -226,7 +218,7 @@ jobs:
     steps:
       # Checkout the repository
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
         # Step 3: Switch to ubuntu user and generate SSH key
       - name: Generate SSH Key

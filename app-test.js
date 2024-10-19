@@ -130,21 +130,33 @@ describe('Planets API Suite', () => {
               });
         });
 
-        // it('it should fetch a planet named Pluto', (done) => {
-        //     let payload = {
-        //         id: 9
-        //     }
-        //   chai.request(server)
-        //       .post('/planet')
-        //       .send(payload)
-        //       .end((err, res) => {
-        //             res.should.have.status(200);
-        //             res.body.should.have.property('id').eql(9);
-        //             res.body.should.have.property('name').eql('Sun');
-        //         done();
-        //       });
-        // });
+        it('it should fetch a planet named Pluto', (done) => {
+            let payload = {
+                id: 9
+            }
+          chai.request(server)
+              .post('/planet')
+              .send(payload)
+              .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('id').eql(9);
+                    res.body.should.have.property('name').eql('Sun');
+                done();
+              });
+        });
 
+        it('it should return an error for an invalid planet id', (done) => {
+            let payload = { id: 999 }; // Invalid id
+            chai.request(server)
+                .post('/planet')
+                .send(payload)
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.text.should.eql("Error in Planet Data");
+                    done();
+                });
+        });
+        
 
     });        
 });
@@ -187,4 +199,18 @@ describe('Testing Other Endpoints', () => {
         });
     });
 
+    describe('MongoDB Connection', () => {
+        it('should handle MongoDB connection error', (done) => {
+            mongoose.connect("invalid_uri", {
+                user: "invalid_user",
+                pass: "invalid_pass",
+                useNewUrlParser: true,
+                useUnifiedTopology: true
+            }, function(err) {
+                err.should.exist;
+                done();
+            });
+        });
+    });
+    
 });
