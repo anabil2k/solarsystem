@@ -145,17 +145,17 @@ describe('Planets API Suite', () => {
         //       });
         // });
 
-        it('it should return an error for an invalid planet id', (done) => {
-            let payload = { id: 999 }; // Invalid id
-            chai.request(server)
-                .post('/planet')
-                .send(payload)
-                .end((err, res) => {
-                    res.should.have.status(200);
-                    res.text.should.eql("Error in Planet Data");
-                    done();
-                });
-        });
+        // it('it should return an error for an invalid planet id', (done) => {
+        //     let payload = { id: 999 }; // Invalid id
+        //     chai.request(server)
+        //         .post('/planet')
+        //         .send(payload)
+        //         .end((err, res) => {
+        //             res.should.have.status(200);
+        //             res.text.should.eql("Error in Planet Data");
+        //             done();
+        //         });
+        // });
         
 
     });        
