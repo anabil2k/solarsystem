@@ -140,7 +140,6 @@ jobs:
       WEB_ELASTIC_IP: 
 
     steps:
-      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
