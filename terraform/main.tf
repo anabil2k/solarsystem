@@ -7,7 +7,7 @@ provider "aws" {
 }
 data "aws_availability_zones" "available" {}
 
-# Backend configuration to store state in S3 and use DynamoDB for locking
+# Backend configuration to store the state file in S3 and use DynamoDB for locking
 terraform {
   backend "s3" {
     bucket         = "my-depi-anmz-terraform-state-bucket"    # Replace with your S3 bucket name
@@ -294,7 +294,7 @@ resource "aws_eip" "k3s_server_eip" {
   domain = "vpc"
 }
  
-# Security Group for Prometheus and Grafana Server
+# Security Group for Kubernetes Server
 resource "aws_security_group" "k3s_sec_group" {
   description = "Allow HTTP, solarsystem port, and SSH traffic"
   vpc_id      = aws_vpc.main_vpc.id
